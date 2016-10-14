@@ -65,7 +65,7 @@ public class CaveScan extends PApplet {
         obj.scale(3);
 
         cone = loadShape("data/" + "cone.obj");
-        cone.scale(3);
+        cone.scale(2);
 
         flock = new Flock(this);
 
@@ -80,7 +80,7 @@ public class CaveScan extends PApplet {
 
         boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 25; i++) {
             flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
         }
 
@@ -184,12 +184,15 @@ public class CaveScan extends PApplet {
             }
         }
         noStroke();
+        lights();
         render.drawFacesVC(mesh);
+
+
 //        pushMatrix();
 //        fill(40, 120);
 //        noStroke();
 //        lights();
-//        gfx.mesh(cave, false, 100);
+//        gfx.mesh(cave, false, 0);
 //        popMatrix();
 
     }

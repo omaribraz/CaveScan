@@ -4,6 +4,7 @@
 
 import processing.core.PApplet;
 import toxi.geom.Vec3D;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -19,7 +20,7 @@ class Boid extends Vec3D {
     private Vec3D acc;
     private float maxforce;
     private float maxspeed;
-    public ArrayList <trail> trailPop;
+    public ArrayList<trail> trailPop;
 
 
     Boid(CaveScan _p, Vec3D pos, Vec3D _vel) {
@@ -30,13 +31,13 @@ class Boid extends Vec3D {
         float r = 7.0f;
         maxspeed = 2;
         maxforce = 0.07f;
-        trailPop = new ArrayList <>();
+        trailPop = new ArrayList<>();
     }
 
     void run() {
         flock();
         if ((p.frameCount % 3 == 0) && (p.frameCount > 11)) {
- //           trail();
+            //          trail();
         }
         update();
         if (p.frameCount > 10) borders();
@@ -109,23 +110,22 @@ class Boid extends Vec3D {
         trail t = new trail(p, this.copy(), vel.copy(), this);
     }
 
-    void trailupdate(){
+    void trailupdate() {
         p.noFill();
         p.strokeWeight(2);
         p.beginShape();
-        for(int i = 0; i< trailPop.size(); i++){
-            trail t =  trailPop.get(i);
+        for (int i = 0; i < trailPop.size(); i++) {
+            trail t = trailPop.get(i);
             t.update();
             float lerp1 = PApplet.map(t.strength, 0, t.trailNo, 0, 1);
-            int c1 = p.color(60, 120, 255,20);
-            int c2 = p.color(255, 165, 0,255);
+            int c1 = p.color(60, 120, 255, 20);
+            int c2 = p.color(255, 165, 0, 255);
             int c = p.lerpColor(c1, c2, lerp1);
             p.stroke(c);
             p.curveVertex(t.x, t.y, t.z);
         }
         p.endShape();
     }
-
 
 
     private void render() {
@@ -138,8 +138,8 @@ class Boid extends Vec3D {
         p.obj.setStroke(100);
         p.obj.scale(1);
         p.shape(p.obj);
-//        p.cone.setFill(p.color(255, 255, 0, 10));
-//        p.shape(p.cone);
+        p.cone.setFill(p.color(255, 255, 34, 10));
+        p.shape(p.cone);
         p.popMatrix();
     }
 
@@ -253,10 +253,10 @@ class Boid extends Vec3D {
 
         if (cavepoints != null) {
             if (cavepoints.size() > 0) {
-                if(p.reverse) {
+                if (p.reverse) {
                     vel.scaleSelf(-3);
                 }
-                if(p.bounce) {
+                if (p.bounce) {
                     Vec3D clstpt = p.cave.getClosestVertexToPoint(this);
                     Vec3D norm = p.Normal.get(clstpt);
                     float velnorm = vel.dot(norm.normalize());
