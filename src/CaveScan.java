@@ -31,7 +31,7 @@ public class CaveScan extends PApplet {
     private WB_Render render;
     private HE_Mesh mesh;
 
-    private ArrayList <HE_Vertex> scanPts = new ArrayList<>();
+    private ArrayList <HE_Vertex> scanPts;
     public ArrayList <Vec3D> scanPtsV = new ArrayList<>();
 
     private HashMap<WB_Coord, Integer> Slope = new HashMap<>();
@@ -47,6 +47,7 @@ public class CaveScan extends PApplet {
 
     public boolean bounce = true;
     public boolean reverse = false;
+
 
 
     public static void main(String[] args) {
@@ -171,16 +172,18 @@ public class CaveScan extends PApplet {
     }
 
     private void meshrun() {
+        scanPts = new ArrayList<>();
         for (Vec3D b : scanPtsV) {
             HE_Vertex c = (HE_Vertex) CaveHe.get(b);
             scanPts.add(c);
         }
-        for (HE_Vertex a : scanPts) {
-            int b = CaveSl.get(a);
-            a.setColor(color(b, 60));
+        if(scanPts.size()>0) {
+            for (HE_Vertex a : scanPts) {
+                int b = CaveSl.get(a);
+                a.setColor(color(b, 60));
+            }
         }
         noStroke();
-        fill(100);
         render.drawFacesVC(mesh);
 //        pushMatrix();
 //        fill(40, 120);

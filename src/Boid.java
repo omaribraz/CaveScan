@@ -35,8 +35,8 @@ class Boid extends Vec3D {
 
     void run() {
         flock();
-        if ((p.frameCount % 1 == 0) && (p.frameCount > 11)) {
-            trail();
+        if ((p.frameCount % 3 == 0) && (p.frameCount > 11)) {
+ //           trail();
         }
         update();
         if (p.frameCount > 10) borders();
@@ -253,14 +253,14 @@ class Boid extends Vec3D {
 
         if (cavepoints != null) {
             if (cavepoints.size() > 0) {
-//                if(p.reverse) {
-//                    vel.scaleSelf(-3);
-//                }
+                if(p.reverse) {
+                    vel.scaleSelf(-3);
+                }
                 if(p.bounce) {
-                    Vec3D norm1 = p.cave.getClosestVertexToPoint(this);
-                    Vec3D norm = p.Normal.get(norm1);
-                    float velnorm = vel.dot(norm);
-                    Vec3D refl1 = norm.scaleSelf(velnorm);
+                    Vec3D clstpt = p.cave.getClosestVertexToPoint(this);
+                    Vec3D norm = p.Normal.get(clstpt);
+                    float velnorm = vel.dot(norm.normalize());
+                    Vec3D refl1 = norm.normalize().scaleSelf(velnorm);
                     vel = vel.subSelf(refl1.scaleSelf(2));
                 }
             }
