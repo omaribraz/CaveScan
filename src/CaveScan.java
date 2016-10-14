@@ -31,7 +31,7 @@ public class CaveScan extends PApplet {
     private WB_Render render;
     private HE_Mesh mesh;
 
-    private List<HE_Vertex> scanPts = null;
+    private ArrayList <HE_Vertex> scanPts = new ArrayList<HE_Vertex>();;
     public ArrayList <Vec3D> scanPtsV = new ArrayList<Vec3D>();
 
     private HashMap<WB_Coord, Integer> Slope = new HashMap<WB_Coord, Integer>();
@@ -78,7 +78,7 @@ public class CaveScan extends PApplet {
             flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
         }
 
-        gfx = new ToxiclibsSupport(this);
+//        gfx = new ToxiclibsSupport(this);
 
     }
 
@@ -114,7 +114,7 @@ public class CaveScan extends PApplet {
         mesh = new HEC_FromOBJFile(sketchPath("data/" + "cave.obj")).create();
         cave = (WETriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave.stl"), STLReader.WEMESH);
 
-        gfx = new ToxiclibsSupport(this);
+//        gfx = new ToxiclibsSupport(this);
         render = new WB_Render(this);
 
 //        WB_KDTree vertexTree = mesh.getVertexTree();
@@ -150,26 +150,26 @@ public class CaveScan extends PApplet {
 
         for (HE_Vertex a : mesh.getVerticesAsArray()) {
             int c1 = color(10, 10, 10);
-            a.setColor(color(c1, 40));
+            a.setColor(color(c1, 30));
         }
 
     }
 
     private void meshrun() {
 
-//        for (Vec3D b : scanPtsV) {
-//            HE_Vertex c = (HE_Vertex) CaveHe.get(b);
-//            scanPts.add(c);
-//        }
+        for (Vec3D b : scanPtsV) {
+            HE_Vertex c = (HE_Vertex) CaveHe.get(b);
+            scanPts.add(c);
+        }
 
-//        for (HE_Vertex a : scanPts) {
-//            int slp = Slope.get(a);
-//            float slp2 = map(slp, 0, 150, 0, 1);
-//            int c1 = color(255, 0, 0);
-//            int c2 = color(0, 255, 000);
-//            int c = lerpColor(c1, c2, slp2);
-//            a.setColor(color(c, 40));
-//        }
+        for (HE_Vertex a : scanPts) {
+            int slp = Slope.get(a);
+            float slp2 = map(slp, 0, 150, 0, 1);
+            int c1 = color(255, 0, 0);
+            int c2 = color(0, 255, 000);
+            int c = lerpColor(c1, c2, slp2);
+            a.setColor(color(c, 60));
+        }
 
         noStroke();
         fill(100);
