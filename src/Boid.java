@@ -4,7 +4,6 @@
 
 import processing.core.PApplet;
 import toxi.geom.Vec3D;
-
 import java.util.List;
 import java.util.ArrayList;
 
@@ -14,11 +13,13 @@ import toxi.geom.Ray3D;
 import static processing.core.PApplet.degrees;
 
 class Boid extends Vec3D {
+
     private CaveScan p;
     private Vec3D vel;
     private Vec3D acc;
     private float maxforce;
     private float maxspeed;
+    public ArrayList <trail> trailPop;
 
 
     Boid(CaveScan _p, Vec3D pos, Vec3D _vel) {
@@ -29,6 +30,7 @@ class Boid extends Vec3D {
         float r = 7.0f;
         maxspeed = 2;
         maxforce = 0.07f;
+        trailPop = new ArrayList <>();
     }
 
     void run() {
@@ -104,9 +106,27 @@ class Boid extends Vec3D {
     }
 
     void trail() {
-        trail tr = new trail(p, this.copy(), vel.copy());
-        p.flock.addTrail(tr);
+        trail t = new trail(p, this.copy(), vel.copy(), this);
     }
+
+    void trailupdate(){
+        p.noFill();
+        p.strokeWeight(2);
+        p.beginShape();
+        for(int i = 0; i< trailPop.size(); i++){
+            trail t =  trailPop.get(i);
+            t.update();
+            float lerp1 = PApplet.map(t.strength, 0, t.trailNo, 0, 1);
+            int c1 = p.color(60, 120, 255,20);
+            int c2 = p.color(255, 165, 0,255);
+            int c = p.lerpColor(c1, c2, lerp1);
+            p.stroke(c);
+            p.curveVertex(t.x, t.y, t.z);
+        }
+        p.endShape();
+    }
+
+
 
     private void render() {
         float theta = vel.headingXY() + PApplet.radians(90);
@@ -118,8 +138,8 @@ class Boid extends Vec3D {
         p.obj.setStroke(100);
         p.obj.scale(1);
         p.shape(p.obj);
-        p.cone.setFill(p.color(255, 255, 0, 20));
-        p.shape(p.cone);
+//        p.cone.setFill(p.color(255, 255, 0, 10));
+//        p.shape(p.cone);
         p.popMatrix();
     }
 
@@ -248,5 +268,5 @@ class Boid extends Vec3D {
 
 
     }
-    
+
 }

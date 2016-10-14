@@ -1,7 +1,6 @@
 /**
  * Created by omar on 10/14/2016.
  */
-import processing.core.PApplet;
 import toxi.geom.PointOctree;
 import toxi.geom.Vec3D;
 

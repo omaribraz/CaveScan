@@ -31,11 +31,12 @@ public class CaveScan extends PApplet {
     private WB_Render render;
     private HE_Mesh mesh;
 
-    private ArrayList <HE_Vertex> scanPts = new ArrayList<HE_Vertex>();;
-    public ArrayList <Vec3D> scanPtsV = new ArrayList<Vec3D>();
+    private ArrayList <HE_Vertex> scanPts = new ArrayList<>();
+    public ArrayList <Vec3D> scanPtsV = new ArrayList<>();
 
-    private HashMap<WB_Coord, Integer> Slope = new HashMap<WB_Coord, Integer>();
-    public HashMap<Vec3D, WB_Coord> CaveHe = new HashMap<Vec3D, WB_Coord>();
+    private HashMap<WB_Coord, Integer> Slope = new HashMap<>();
+    public HashMap<Vec3D, WB_Coord> CaveHe = new HashMap<>();
+    public HashMap<WB_Coord, Integer> CaveSl = new HashMap<>();
 
 
     Octree meshoctree;
@@ -74,11 +75,11 @@ public class CaveScan extends PApplet {
 
         boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 50; i++) {
             flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
         }
 
-//        gfx = new ToxiclibsSupport(this);
+        gfx = new ToxiclibsSupport(this);
 
     }
 
@@ -114,16 +115,19 @@ public class CaveScan extends PApplet {
         mesh = new HEC_FromOBJFile(sketchPath("data/" + "cave.obj")).create();
         cave = (WETriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave.stl"), STLReader.WEMESH);
 
-//        gfx = new ToxiclibsSupport(this);
+        gfx = new ToxiclibsSupport(this);
         render = new WB_Render(this);
 
 //        WB_KDTree vertexTree = mesh.getVertexTree();
         int novert = mesh.getNumberOfVertices();
 
         cave.flipVertexOrder();
+        mesh.flipFaces();
+
+
 //        int novert1 = cave.getNumVertices();
 
-        cavepts = (new ArrayList<Vec3D>(cave.getVertices()));
+        cavepts = (new ArrayList<>(cave.getVertices()));
 
 
         for (int i = 0; i < novert; i++) {
@@ -132,9 +136,9 @@ public class CaveScan extends PApplet {
             WB_Coord vertex1 = mesh.getVertex(i);
             Vec3D vertex = cave.getVertexForID(i);
 
-            float xnPos = (Float) mnorm.xf();
-            float ynPos = (Float) mnorm.yf();
-            float znPos = (Float) mnorm.zf();
+            float xnPos = mnorm.xf();
+            float ynPos = mnorm.yf();
+            float znPos = mnorm.zf();
 
             Vec3D mnormv = new Vec3D(xnPos, ynPos, znPos);
             Vec3D mvert = new Vec3D(0, 0, 1);
@@ -153,6 +157,16 @@ public class CaveScan extends PApplet {
             a.setColor(color(c1, 30));
         }
 
+        for (HE_Vertex a : mesh.getVerticesAsArray()) {
+            int slp = Slope.get(a);
+            float slp2 = map(slp, 0, 150, 0, 1);
+            int c1 = color(255, 0, 0);
+            int c2 = color(0, 255, 0);
+            int c = lerpColor(c1, c2, slp2);
+            CaveSl.put(a,c);
+
+        }
+
     }
 
     private void meshrun() {
@@ -163,12 +177,8 @@ public class CaveScan extends PApplet {
         }
 
         for (HE_Vertex a : scanPts) {
-            int slp = Slope.get(a);
-            float slp2 = map(slp, 0, 150, 0, 1);
-            int c1 = color(255, 0, 0);
-            int c2 = color(0, 255, 000);
-            int c = lerpColor(c1, c2, slp2);
-            a.setColor(color(c, 60));
+            int b = CaveSl.get(a);
+            a.setColor(color(b, 60));
         }
 
         noStroke();
