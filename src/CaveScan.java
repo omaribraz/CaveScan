@@ -37,12 +37,16 @@ public class CaveScan extends PApplet {
     private HashMap<WB_Coord, Integer> Slope = new HashMap<>();
     public HashMap<Vec3D, WB_Coord> CaveHe = new HashMap<>();
     public HashMap<WB_Coord, Integer> CaveSl = new HashMap<>();
+    public HashMap<Vec3D, Vec3D> Normal = new HashMap<>();
 
 
     Octree meshoctree;
     Octree boidoctree;
 
     Flock flock;
+
+    public boolean bounce = true;
+    public boolean reverse = false;
 
 
     public static void main(String[] args) {
@@ -150,13 +154,12 @@ public class CaveScan extends PApplet {
             int slopeint = (int) slope;
             Slope.put(vertex1, slopeint);
             CaveHe.put(vertex, vertex1);
+            Normal.put(vertex,mnormv);
         }
 
         for (HE_Vertex a : mesh.getVerticesAsArray()) {
-            int c1 = color(10, 10, 10);
-            a.setColor(color(c1, 30));
+            a.setColor(color(40, 30));
         }
-
         for (HE_Vertex a : mesh.getVerticesAsArray()) {
             int slp = Slope.get(a);
             float slp2 = map(slp, 0, 150, 0, 1);
@@ -164,32 +167,26 @@ public class CaveScan extends PApplet {
             int c2 = color(0, 255, 0);
             int c = lerpColor(c1, c2, slp2);
             CaveSl.put(a,c);
-
         }
-
     }
 
     private void meshrun() {
-
         for (Vec3D b : scanPtsV) {
             HE_Vertex c = (HE_Vertex) CaveHe.get(b);
             scanPts.add(c);
         }
-
         for (HE_Vertex a : scanPts) {
             int b = CaveSl.get(a);
             a.setColor(color(b, 60));
         }
-
         noStroke();
         fill(100);
         render.drawFacesVC(mesh);
-
 //        pushMatrix();
 //        fill(40, 120);
 //        noStroke();
 //        lights();
-//        gfx.mesh(cave, false, 10);
+//        gfx.mesh(cave, false, 100);
 //        popMatrix();
 
     }

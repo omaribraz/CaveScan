@@ -253,7 +253,16 @@ class Boid extends Vec3D {
 
         if (cavepoints != null) {
             if (cavepoints.size() > 0) {
-                vel.scaleSelf(-3);
+//                if(p.reverse) {
+//                    vel.scaleSelf(-3);
+//                }
+                if(p.bounce) {
+                    Vec3D norm1 = p.cave.getClosestVertexToPoint(this);
+                    Vec3D norm = p.Normal.get(norm1);
+                    float velnorm = vel.dot(norm);
+                    Vec3D refl1 = norm.scaleSelf(velnorm);
+                    vel = vel.subSelf(refl1.scaleSelf(2));
+                }
             }
 
             List<Vec3D> scned;
