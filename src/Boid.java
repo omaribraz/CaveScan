@@ -1,9 +1,13 @@
 /**
  * Created by omar on 10/14/2016.
  */
+
 import processing.core.PApplet;
 import toxi.geom.Vec3D;
+
 import java.util.List;
+import java.util.ArrayList;
+
 import toxi.geom.Ray3D;
 
 
@@ -18,7 +22,7 @@ class Boid extends Vec3D {
 
 
     Boid(CaveScan _p, Vec3D pos, Vec3D _vel) {
-        super (pos);
+        super(pos);
         p = _p;
         vel = _vel;
         acc = new Vec3D(0, 0, 0);
@@ -29,12 +33,12 @@ class Boid extends Vec3D {
 
     void run() {
         flock();
-        if ((p.frameCount%1==0)&&(p.frameCount>11)) {
+        if ((p.frameCount % 1 == 0) && (p.frameCount > 11)) {
             trail();
         }
         update();
-        borders();
-        if (p.frameCount>10)render();
+        if (p.frameCount > 10) borders();
+        if (p.frameCount > 10) render();
     }
 
     private void applyForce(Vec3D force) {
@@ -52,7 +56,7 @@ class Boid extends Vec3D {
         Vec3D cavept = p.cave.getClosestVertexToPoint(this);
         float distpt = cavept.distanceToSquared(this);
 
-        if (distpt < 55*55) {
+        if (distpt < 55 * 55) {
             p.flock.removeBoid(this);
         }
     }
@@ -62,7 +66,7 @@ class Boid extends Vec3D {
 
         List boidpos = p.boidoctree.getPointsWithinSphere(this.copy(), 120);
 
-        if (boidpos!=null) {
+        if (boidpos != null) {
 
             Vec3D sep = separate(boidpos);
             Vec3D ali = align(boidpos);
@@ -87,9 +91,6 @@ class Boid extends Vec3D {
         vel.addSelf(acc);
         vel.limit(maxspeed);
         this.addSelf(vel);
-        //super.x = pos.x;
-        //super.y = pos.y;
-        //super.z = pos.z;
         acc.scaleSelf(0);
     }
 
@@ -103,13 +104,12 @@ class Boid extends Vec3D {
     }
 
     void trail() {
-        trail tr = new trail(p,this.copy(), vel.copy());
+        trail tr = new trail(p, this.copy(), vel.copy());
         p.flock.addTrail(tr);
     }
 
     private void render() {
         float theta = vel.headingXY() + PApplet.radians(90);
-
         p.stroke(255);
         p.pushMatrix();
         p.translate(x, y, z);
@@ -118,12 +118,14 @@ class Boid extends Vec3D {
         p.obj.setStroke(100);
         p.obj.scale(1);
         p.shape(p.obj);
+        p.cone.setFill(p.color(0, 255, 255, 40));
+        p.shape(p.cone);
         p.popMatrix();
     }
 
     // Separation
     private Vec3D separate(List<Boid> boids) {
-        float desiredseparation = 45.0f*45.0f;
+        float desiredseparation = 45.0f * 45.0f;
         Vec3D steer = new Vec3D(0, 0, 0);
         int count = 0;
         for (Boid other : boids) {
@@ -131,13 +133,13 @@ class Boid extends Vec3D {
             if ((d > 0) && (d < desiredseparation)) {
                 Vec3D diff = this.sub(other);
                 diff.normalize();
-                diff.scaleSelf(1/d);
+                diff.scaleSelf(1 / d);
                 steer.add(diff);
                 count++;
             }
         }
         if (count > 0) {
-            steer.scaleSelf(1/(float)count);
+            steer.scaleSelf(1 / (float) count);
         }
         if (steer.magnitude() > 0) {
             steer.normalize();
@@ -150,7 +152,7 @@ class Boid extends Vec3D {
 
     // Alignment
     private Vec3D align(List<Boid> boids) {
-        float neighbordist = 70.0f*70.0f;
+        float neighbordist = 70.0f * 70.0f;
         Vec3D sum = new Vec3D(0, 0, 0);
         int count = 0;
         for (Boid other : boids) {
@@ -161,7 +163,7 @@ class Boid extends Vec3D {
             }
         }
         if (count > 0) {
-            sum.scaleSelf(1/(float)count);
+            sum.scaleSelf(1 / (float) count);
             sum.normalize();
             sum.scaleSelf(maxspeed);
             Vec3D steer = sum.subSelf(vel);
@@ -175,7 +177,7 @@ class Boid extends Vec3D {
 
     // Cohesion
     private Vec3D cohesion(List<Boid> boids) {
-        float neighbordist = 80.0f*80.0f;
+        float neighbordist = 80.0f * 80.0f;
         Vec3D sum = new Vec3D(0, 0, 0);
         int count = 0;
         for (Boid other : boids) {
@@ -186,7 +188,7 @@ class Boid extends Vec3D {
             }
         }
         if (count > 0) {
-            sum.scaleSelf(1/(float)count);
+            sum.scaleSelf(1 / (float) count);
             return seek(sum);
         } else {
             return new Vec3D(0, 0, 0);
@@ -225,12 +227,26 @@ class Boid extends Vec3D {
     // Wraparound
     private void borders() {
         List<Vec3D> cavepoints = null;
+
         cavepoints = p.meshoctree.getPointsWithinSphere(this.copy(), 50);
 
-        if (cavepoints !=null) {
-            if (cavepoints.size()>0) {
+
+        if (cavepoints != null) {
+            if (cavepoints.size() > 0) {
                 vel.scaleSelf(-3);
             }
+
+            List<Vec3D> scned;
+            scned = p.meshoctree.getPointsWithinSphere(this.copy(), 100);
+            if (scned != null) {
+                for (Vec3D a : scned) {
+                    p.scanPtsV.add(a);
+                }
+            }
+
         }
+
+
     }
+    
 }
