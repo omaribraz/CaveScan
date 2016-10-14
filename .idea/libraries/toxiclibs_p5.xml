@@ -1,7 +1,9 @@
 <component name="libraryTable">
   <library name="toxiclibs_p5">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../../../../Processing/libraries/toxiclibs_p5/library/toxiclibs_p5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/toxic/toxiclibs_p5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/toxic/toxiclibscore.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/toxic/volumeutils.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

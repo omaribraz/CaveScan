@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="peasycam">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../../../../Processing/libraries/peasycam/library/peasycam.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/peasycam/peasycam.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
