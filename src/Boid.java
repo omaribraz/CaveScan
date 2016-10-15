@@ -138,8 +138,8 @@ class Boid extends Vec3D {
         p.obj.setStroke(100);
         p.obj.scale(1);
         p.shape(p.obj);
- //       p.cone.setFill(p.color(255, 255, 34, 10));
-//        p.shape(p.cone);
+        p.cone.setFill(p.color(255, 255, 34, 10));
+        p.shape(p.cone);
         p.popMatrix();
     }
 

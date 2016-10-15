@@ -64,8 +64,8 @@ public class CaveScan extends PApplet {
         obj = loadShape("data/" + "drone.obj");
         obj.scale(3);
 
-//        cone = loadShape("data/" + "cone.obj");
-//        cone.scale(2);
+        cone = loadShape("data/" + "cone.obj");
+        cone.scale(5);
 
         flock = new Flock(this);
 
