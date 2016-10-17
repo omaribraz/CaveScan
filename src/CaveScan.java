@@ -19,6 +19,8 @@ import wblut.processing.*;
 import wblut.hemesh.*;
 import wblut.geom.*;
 
+import com.hamoid.*;
+
 public class CaveScan extends PApplet {
 
     PShape obj;
@@ -48,6 +50,10 @@ public class CaveScan extends PApplet {
     public boolean bounce = true;
     public boolean reverse = false;
 
+    ArrayList <Node>nodes= new ArrayList<>();
+
+    VideoExport videoExport;
+
 
 
     public static void main(String[] args) {
@@ -72,7 +78,9 @@ public class CaveScan extends PApplet {
         meshsetup();
 
         Vec3D a = cave.computeCentroid();
-        PeasyCam cam = new PeasyCam(this, a.x, a.y, 0, 2200);
+       PeasyCam cam = new PeasyCam(this, a.x, a.y, 0, 2200);
+
+ //       PeasyCam cam = new PeasyCam(this, 750, 750, 0, 2200);
 
         float DIM = 1500;
         meshoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
@@ -80,16 +88,32 @@ public class CaveScan extends PApplet {
 
         boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
 
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 55; i++) {
             flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
         }
 
         gfx = new ToxiclibsSupport(this);
 
+
+//        Node n = new Node(this,new Vec3D(750,750,0));
+//        nodes.add(n);
+
+        videoExport = new VideoExport(this, "basic.mp4");
+
+
+
     }
 
     public void draw() {
         background(0);
+
+//        for(int i = 0; i < nodes.size(); i++){
+//            Node b = nodes.get(i);
+//            b.update();
+//        }
+
+
+
 
         for (Boid b : flock.boids) {
             boidoctree.addBoid(b);
@@ -109,10 +133,12 @@ public class CaveScan extends PApplet {
 
         stroke(255, 0, 0);
         noFill();
-//        boidoctree.draw();
+ //       boidoctree.draw();
 
 
         meshrun();
+
+        videoExport.saveFrame();
 
     }
 

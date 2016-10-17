@@ -12,5 +12,6 @@
     <orderEntry type="library" name="peasycam" level="project" />
     <orderEntry type="library" name="toxiclibs_p5" level="project" />
     <orderEntry type="library" name="exp4j" level="project" />
+    <orderEntry type="library" name="VideoExport" level="project" />
   </component>
 </module>
