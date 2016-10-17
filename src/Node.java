@@ -55,7 +55,7 @@ public class Node extends VerletParticle3D {
                 if (n1 != this) {
                     if (n1.distanceTo(this) < linkThreshold) {
                         if (p.random(1000) < 1) {
-                            VerletSpring3D l = new VerletSpring3D(n1, this, 100, 0.01f);
+  //                          VerletSpring3D l = new VerletSpring3D(n1, this, 100, 0.01f);
   //                          p.physics.addSpring(l);
                             Line3D l3 = new Line3D(n1,this);
                             lines.add(l3);
