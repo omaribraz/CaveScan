@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="verletphysics">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/verlet/verletphysics.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

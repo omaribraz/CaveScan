@@ -13,5 +13,6 @@
     <orderEntry type="library" name="toxiclibs_p5" level="project" />
     <orderEntry type="library" name="exp4j" level="project" />
     <orderEntry type="library" name="VideoExport" level="project" />
+    <orderEntry type="library" name="verletphysics" level="project" />
   </component>
 </module>

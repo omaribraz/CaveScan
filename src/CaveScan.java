@@ -14,6 +14,8 @@ import peasy.*;
 import toxi.geom.*;
 import toxi.geom.mesh.*;
 import toxi.processing.ToxiclibsSupport;
+import toxi.physics3d.*;
+import toxi.physics3d.behaviors.*;
 
 import wblut.processing.*;
 import wblut.hemesh.*;
@@ -33,8 +35,8 @@ public class CaveScan extends PApplet {
     private WB_Render render;
     private HE_Mesh mesh;
 
-    private ArrayList <HE_Vertex> scanPts;
-    public ArrayList <Vec3D> scanPtsV = new ArrayList<>();
+    private ArrayList<HE_Vertex> scanPts;
+    public ArrayList<Vec3D> scanPtsV = new ArrayList<>();
 
     private HashMap<WB_Coord, Integer> Slope = new HashMap<>();
     public HashMap<Vec3D, WB_Coord> CaveHe = new HashMap<>();
@@ -50,10 +52,9 @@ public class CaveScan extends PApplet {
     public boolean bounce = true;
     public boolean reverse = false;
 
-    ArrayList <Node>nodes= new ArrayList<>();
+    VerletPhysics3D physics;
 
     VideoExport videoExport;
-
 
 
     public static void main(String[] args) {
@@ -67,78 +68,87 @@ public class CaveScan extends PApplet {
 
     public void setup() {
 
-        obj = loadShape("data/" + "drone.obj");
-        obj.scale(3);
+//        obj = loadShape("data/" + "drone.obj");
+//        obj.scale(3);
+//
+//        cone = loadShape("data/" + "cone.obj");
+//        cone.scale(5);
+//
+//        flock = new Flock(this);
+//
+//       meshsetup();
+//
+//        Vec3D a = cave.computeCentroid();
+//       PeasyCam cam = new PeasyCam(this, a.x, a.y, 0, 2200);
 
-        cone = loadShape("data/" + "cone.obj");
-        cone.scale(5);
+        PeasyCam cam = new PeasyCam(this, 750, 750, 0, 2200);
+        physics = new VerletPhysics3D();
+     //   physics.setDrag(0.05f);
+        physics.setWorldBounds(new AABB(new Vec3D(0,0,0),1500));
 
-        flock = new Flock(this);
-
-        meshsetup();
-
-        Vec3D a = cave.computeCentroid();
-       PeasyCam cam = new PeasyCam(this, a.x, a.y, 0, 2200);
-
- //       PeasyCam cam = new PeasyCam(this, 750, 750, 0, 2200);
-
-        float DIM = 1500;
-        meshoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
-        meshoctree.addAll(cavepts);
-
-        boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
-
-        for (int i = 0; i < 55; i++) {
-            flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
-        }
-
-        gfx = new ToxiclibsSupport(this);
+//        float DIM = 1500;
+//        meshoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
+//        meshoctree.addAll(cavepts);
+//
+//        boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(a), DIM * 2);
+//
+//        for (int i = 0; i < 55; i++) {
+//            flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
+//        }
+//
+//        gfx = new ToxiclibsSupport(this);
 
 
-//        Node n = new Node(this,new Vec3D(750,750,0));
-//        nodes.add(n);
+        Node n = new Node(this, new Vec3D(750, 750, 0));
+        physics.addParticle(n);
 
-        videoExport = new VideoExport(this, "basic.mp4");
+   //     nodes.add(n);
 
+        //videoExport = new VideoExport(this, "basic.mp4");
 
 
     }
 
     public void draw() {
+        physics.update();
+
         background(0);
 
-//        for(int i = 0; i < nodes.size(); i++){
-//            Node b = nodes.get(i);
-//            b.update();
+
+        for (int i = 0; i<physics.particles.size(); i++) {
+            VerletParticle3D p2 = physics.particles.get(i);
+            p2.update();
+        }
+
+
+
+
+
+
+//        for (Boid b : flock.boids) {
+//            boidoctree.addBoid(b);
+//        }
+//
+//        boidoctree.run();
+//
+//        flock.run();
+//
+//        if (frameCount < 10) {
+//            for (int i = 0; i < flock.boids.size(); i++) {
+//                Boid b = flock.boids.get(i);
+//                b.checkMesh();
+//            }
 //        }
 
 
+//      //  stroke(255, 0, 0);
+        //    //   noFill();
+        //          //   boidoctree.draw();
 
 
-        for (Boid b : flock.boids) {
-            boidoctree.addBoid(b);
-        }
+        //       meshrun();
 
-        boidoctree.run();
-
-        flock.run();
-
-        if (frameCount < 10) {
-            for (int i = 0; i < flock.boids.size(); i++) {
-                Boid b = flock.boids.get(i);
-                b.checkMesh();
-            }
-        }
-
-
-        stroke(255, 0, 0);
-        noFill();
- //       boidoctree.draw();
-
-
-        meshrun();
-
-        videoExport.saveFrame();
+        //       videoExport.saveFrame();
 
     }
 
@@ -181,7 +191,7 @@ public class CaveScan extends PApplet {
             int slopeint = (int) slope;
             Slope.put(vertex1, slopeint);
             CaveHe.put(vertex, vertex1);
-            Normal.put(vertex,mnormv);
+            Normal.put(vertex, mnormv);
         }
 
         for (HE_Vertex a : mesh.getVerticesAsArray()) {
@@ -193,7 +203,7 @@ public class CaveScan extends PApplet {
             int c1 = color(255, 0, 0);
             int c2 = color(0, 255, 0);
             int c = lerpColor(c1, c2, slp2);
-            CaveSl.put(a,c);
+            CaveSl.put(a, c);
         }
     }
 
@@ -203,7 +213,7 @@ public class CaveScan extends PApplet {
             HE_Vertex c = (HE_Vertex) CaveHe.get(b);
             scanPts.add(c);
         }
-        if(scanPts.size()>0) {
+        if (scanPts.size() > 0) {
             for (HE_Vertex a : scanPts) {
                 int b = CaveSl.get(a);
                 a.setColor(color(b, 60));
