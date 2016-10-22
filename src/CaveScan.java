@@ -14,10 +14,14 @@ import peasy.*;
 import toxi.geom.*;
 import toxi.geom.mesh.*;
 import toxi.processing.ToxiclibsSupport;
+import toxi.physics3d.*;
+import toxi.physics3d.behaviors.*;
 
 import wblut.processing.*;
 import wblut.hemesh.*;
 import wblut.geom.*;
+
+import com.hamoid.*;
 
 public class CaveScan extends PApplet {
 
@@ -47,6 +51,10 @@ public class CaveScan extends PApplet {
 
     public boolean bounce = true;
     public boolean reverse = false;
+
+    VerletPhysics3D physics;
+
+    VideoExport videoExport;
 
 
 
@@ -113,6 +121,8 @@ public class CaveScan extends PApplet {
 
 
         meshrun();
+
+//        videoExport.saveFrame();
 
     }
 

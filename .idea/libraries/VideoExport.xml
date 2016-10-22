@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="VideoExport">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/video/VideoExport.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
