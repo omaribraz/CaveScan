@@ -34,7 +34,8 @@ public class CaveScan extends PApplet {
 
 
     private ToxiclibsSupport gfx;
-    WETriangleMesh cave;
+    TriangleMesh cave;
+    Mesh2 cave2 = new Mesh2(this, new String());
     private ArrayList<Vec3D> cavepts;
 
     private WB_Render render;
@@ -42,6 +43,7 @@ public class CaveScan extends PApplet {
 
     private ArrayList<HE_Vertex> scanPts;
     public ArrayList<Vec3D> scanPtsV = new ArrayList<>();
+
 
     private HashMap<WB_Coord, Integer> Slope = new HashMap<>();
     public HashMap<Vec3D, WB_Coord> CaveHe = new HashMap<>();
@@ -74,6 +76,7 @@ public class CaveScan extends PApplet {
 
     int start, end;
 
+
     ArrayList<Vec3D> pts = new ArrayList<>();
     ArrayList<Line3D> lines = new ArrayList<>();
 
@@ -97,13 +100,13 @@ public class CaveScan extends PApplet {
 //
 //        flock = new Flock(this);
 
-        PeasyCam cam = new PeasyCam(this, 0, 0, 0, 220);
+//        PeasyCam cam = new PeasyCam(this, 0, 0, 0, 220);
 
 
-//        meshsetup();
-//
-//        Vec3D a = cave.computeCentroid();
-//        PeasyCam cam = new PeasyCam(this, a.x, a.y, 0, 2200);
+        meshsetup();
+
+        Vec3D a = cave.computeCentroid();
+        PeasyCam cam = new PeasyCam(this, a.x, a.y, 0, 2200);
 
 
 //        float DIM = 1500;
@@ -118,63 +121,78 @@ public class CaveScan extends PApplet {
 //
 //        gfx = new ToxiclibsSupport(this);
 
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                for (int k = 0; k < 10; k++) {
-                    pts.add(new Vec3D(i * 10, j * 10, k * 10));
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                for (int k = 0; k < 20; k++) {
+                    pts.add(new Vec3D(i * 70, j * 70, k * 30));
                 }
             }
         }
 
-
-        showOption[2] = true;
-        gs = new Graph();
-        for (int i = 0; i < pts.size(); i++) {
-            Vec3D a = pts.get(i);
-            gs.addNode(new GraphNode(i, a.x, a.y, a.z));
-            for (int j = 0; j < pts.size(); j++) {
-                Vec3D b = pts.get(j);
-                if (b != a) {
-                    if (b.distanceTo(a) < 20) {
-                        gs.addEdge(i, j, 0);
-                        Line3D l1 = new Line3D(a, b);
-                        lines.add(l1);
+        for (int j = 0; j < 10; j++) {
+            for (int i = 0; i < pts.size(); i++) {
+                Vec3D v = pts.get(i);
+                Ray3D r = new Ray3D(v, new Vec3D(0, 0, 1));
+                if (!cave.intersectsRay(r)) {
+                    pts.remove(v);
+                } else {
+                    if (cave2.intersectsRay(r)) {
+                        pts.remove(v);
                     }
                 }
             }
         }
 
 
-        gNodes = gs.getNodeArray();
-        gEdges = gs.getAllEdgeArray();
-        start = 0;
-        end = 567;
-        gs.compact();
+//        showOption[2] = true;
+//        gs = new Graph();
+//        for (int i = 0; i < pts.size(); i++) {
+//            Vec3D f = pts.get(i);
+//            gs.addNode(new GraphNode(i, f.x, f.y, f.z));
+//            for (int j = 0; j < pts.size(); j++) {
+//                Vec3D b = pts.get(j);
+//                if (b != f) {
+//                    if (b.distanceTo(f) < 15) {
+//                        gs.addEdge(i, j, 0);
+//                        Line3D l1 = new Line3D(f, b);
+//                        lines.add(l1);
+//                    }
+//                }
+//            }
+//        }
+//
+//
+//        gNodes = gs.getNodeArray();
+//        gEdges = gs.getAllEdgeArray();
+//        start = 0;
+//        end = 568;
+//        gs.compact();
 
 
     }
 
 
-
-
     public void draw() {
         background(0);
 
+
+//        if(frameCount>15) {
         for (Vec3D a : pts) {
             stroke(255);
+            strokeWeight(2);
             point(a.x, a.y, a.z);
         }
 
-        pathFinder = makePathFinder(3);
-        usePathFinder(pathFinder);
+//        pathFinder = makePathFinder(3);
+//        usePathFinder(pathFinder);
+//
+//        drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
+//
+//        drawRoute(rNodes, color(200, 0, 0), 5.0f);
 
-        drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
-
-        drawRoute(rNodes, color(200, 0, 0), 5.0f);
-
-        if (showOption[0]) {
-            drawNodes();
-        }
+//        if (showOption[0]) {
+//            drawNodes();
+//        }
 
 //        for(Line3D l : lines ){
 //            stroke(220);
@@ -203,17 +221,20 @@ public class CaveScan extends PApplet {
 
 //        meshrun();
 
+        pushMatrix();
+        fill(40, 120);
+        noStroke();
+        lights();
+        gfx.mesh(cave2, false, 0);
+        popMatrix();
+
 //        videoExport.saveFrame();
+        //       }
 
     }
 
-    void usePathFinder(IGraphSearch pf) {
-        pf.search(start, end, true);
-        rNodes = pf.getRoute();
-        exploredEdges = pf.getExaminedEdges();
-    }
 
-    IGraphSearch makePathFinder( int pathFinder) {
+    IGraphSearch makePathFinder(int pathFinder) {
         IGraphSearch pf = null;
         float f = 1.0f;
         switch (pathFinder) {
@@ -257,6 +278,7 @@ public class CaveScan extends PApplet {
         }
     }
 
+
     void drawNodes() {
         pushStyle();
         noStroke();
@@ -281,7 +303,9 @@ public class CaveScan extends PApplet {
 
     private void meshsetup() {
         mesh = new HEC_FromOBJFile(sketchPath("data/" + "cave.obj")).create();
-        cave = (WETriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave.stl"), STLReader.WEMESH);
+        cave = (TriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave.stl"), STLReader.TRIANGLEMESH);
+        cave2.addMesh(cave);
+
 
         gfx = new ToxiclibsSupport(this);
         render = new WB_Render(this);
