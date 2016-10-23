@@ -69,14 +69,13 @@ public class CaveScan extends PApplet {
     IGraphSearch pathFinder;
 
     GraphNode startNode, endNode;
-    float nodeSize;
 
     boolean[] showOption = new boolean[3];
 
     int start, end;
 
-    ArrayList <Vec3D> pts = new ArrayList<>();
-    ArrayList <Line3D> lines = new ArrayList<>();
+    ArrayList<Vec3D> pts = new ArrayList<>();
+    ArrayList<Line3D> lines = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -128,24 +127,17 @@ public class CaveScan extends PApplet {
         }
 
 
-
-
-
-
-
-
         showOption[2] = true;
-        nodeSize = 10.0f;
         gs = new Graph();
-        for(int i = 0; i < pts.size(); i++) {
+        for (int i = 0; i < pts.size(); i++) {
             Vec3D a = pts.get(i);
             gs.addNode(new GraphNode(i, a.x, a.y, a.z));
-            for(int j = 0; j < pts.size(); j++){
+            for (int j = 0; j < pts.size(); j++) {
                 Vec3D b = pts.get(j);
-                if(b!=a){
-                    if(b.distanceTo(a)<15){
-                        gs.addEdge(i,j,0);
-                        Line3D l1 = new Line3D(a,b);
+                if (b != a) {
+                    if (b.distanceTo(a) < 15) {
+                        gs.addEdge(i, j, 0);
+                        Line3D l1 = new Line3D(a, b);
                         lines.add(l1);
                     }
                 }
@@ -156,69 +148,38 @@ public class CaveScan extends PApplet {
         gNodes = gs.getNodeArray();
         gEdges = gs.getAllEdgeArray();
         start = 0;
-        end = 587;
+        end = 999;
         gs.compact();
 
 
-
     }
 
-    void usePathFinder(IGraphSearch pf) {
-        pf.search(start, end, true);
-        rNodes = pf.getRoute();
-        exploredEdges = pf.getExaminedEdges();
-    }
 
-    IGraphSearch makePathFinder(Graph graph, int pathFinder){
-        IGraphSearch pf = null;
-        float f = 1.0f;
-        switch(pathFinder){
-            case 0:
-                pf = new GraphSearch_DFS(gs);
-                break;
-            case 1:
-                pf = new GraphSearch_BFS(gs);
-                break;
-            case 2:
-                pf = new GraphSearch_Dijkstra(gs);
-                break;
-            case 3:
-                pf = new GraphSearch_Astar(gs, new AshCrowFlight(f));
-                break;
-            case 4:
-                pf = new GraphSearch_Astar(gs, new AshManhattan(f));
-                break;
-        }
-        return pf;
-    }
 
 
     public void draw() {
         background(0);
 
-        for(Vec3D a: pts){
+        for (Vec3D a : pts) {
             stroke(255);
-            point(a.x,a.y,a.z);
+            point(a.x, a.y, a.z);
         }
 
-        pathFinder = makePathFinder(gs, 3);
+        pathFinder = makePathFinder(3);
         usePathFinder(pathFinder);
 
-       drawEdges(exploredEdges, color(0,0,255), 1.8f);
+        drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
 
-        drawRoute(rNodes, color(200,0,0), 5.0f);
+        drawRoute(rNodes, color(200, 0, 0), 5.0f);
 
-        if(showOption[0] ) {
- //           drawNodes();
+        if (showOption[0]) {
+            drawNodes();
         }
 
 //        for(Line3D l : lines ){
 //            stroke(220);
 //            line(l.a.x, l.a.y, l.a.z, l.b.x, l.b.y, l.b.z);
 //        }
-
-
-
 
 
 //        for (Boid b : flock.boids) {
@@ -246,44 +207,73 @@ public class CaveScan extends PApplet {
 
     }
 
-    void drawRoute(GraphNode[] r, int lineCol, float sWeight){
-        if(r.length >= 2){
+    void usePathFinder(IGraphSearch pf) {
+        pf.search(start, end, true);
+        rNodes = pf.getRoute();
+        exploredEdges = pf.getExaminedEdges();
+    }
+
+    IGraphSearch makePathFinder( int pathFinder) {
+        IGraphSearch pf = null;
+        float f = 1.0f;
+        switch (pathFinder) {
+            case 0:
+                pf = new GraphSearch_DFS(gs);
+                break;
+            case 1:
+                pf = new GraphSearch_BFS(gs);
+                break;
+            case 2:
+                pf = new GraphSearch_Dijkstra(gs);
+                break;
+            case 3:
+                pf = new GraphSearch_Astar(gs, new AshCrowFlight(f));
+                break;
+            case 4:
+                pf = new GraphSearch_Astar(gs, new AshManhattan(f));
+                break;
+        }
+        return pf;
+    }
+
+    void drawRoute(GraphNode[] r, int lineCol, float sWeight) {
+        if (r.length >= 2) {
             pushStyle();
             stroke(lineCol);
             strokeWeight(sWeight);
             noFill();
-            for(int i = 1; i < r.length; i++)
-                line(r[i-1].xf(), r[i-1].yf(), r[i-1].zf(), r[i].xf(), r[i].yf(), r[i].zf());
+            for (int i = 1; i < r.length; i++)
+                line(r[i - 1].xf(), r[i - 1].yf(), r[i - 1].zf(), r[i].xf(), r[i].yf(), r[i].zf());
             // Route start node
             strokeWeight(15.0f);
-            stroke(0,0,160);
-            fill(0,0,255);
+            stroke(0, 0, 160);
+            fill(0, 0, 255);
             point(r[0].xf(), r[0].yf(), r[0].zf());
             // Route end node
-            stroke(160,0,0);
-            fill(255,0,0);
-            point(r[r.length-1].xf(), r[r.length-1].yf(), r[r.length-1].zf());
+            stroke(160, 0, 0);
+            fill(255, 0, 0);
+            point(r[r.length - 1].xf(), r[r.length - 1].yf(), r[r.length - 1].zf());
             popStyle();
         }
     }
 
-    void drawNodes(){
+    void drawNodes() {
         pushStyle();
         noStroke();
-        fill(255,0,255,72);
-        for(GraphNode node : gNodes)
-            ellipse(node.xf(), node.yf(), nodeSize, nodeSize);
+        fill(255, 0, 255, 72);
+        for (GraphNode node : gNodes)
+            point(node.xf(), node.yf(), node.zf());
         popStyle();
     }
 
-    void drawEdges(GraphEdge[] edges, int lineCol, float sWeight){
-        if(edges != null){
+    void drawEdges(GraphEdge[] edges, int lineCol, float sWeight) {
+        if (edges != null) {
             pushStyle();
             noFill();
             stroke(lineCol);
             strokeWeight(sWeight);
-            for(GraphEdge ge : edges){
-                    line(ge.from().xf(), ge.from().yf(),ge.from().zf(), ge.to().xf(), ge.to().yf(),ge.to().zf());
+            for (GraphEdge ge : edges) {
+                line(ge.from().xf(), ge.from().yf(), ge.from().zf(), ge.to().xf(), ge.to().yf(), ge.to().zf());
             }
             popStyle();
         }
