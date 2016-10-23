@@ -135,7 +135,7 @@ public class CaveScan extends PApplet {
             for (int j = 0; j < pts.size(); j++) {
                 Vec3D b = pts.get(j);
                 if (b != a) {
-                    if (b.distanceTo(a) < 15) {
+                    if (b.distanceTo(a) < 20) {
                         gs.addEdge(i, j, 0);
                         Line3D l1 = new Line3D(a, b);
                         lines.add(l1);
@@ -148,7 +148,7 @@ public class CaveScan extends PApplet {
         gNodes = gs.getNodeArray();
         gEdges = gs.getAllEdgeArray();
         start = 0;
-        end = 999;
+        end = 567;
         gs.compact();
 
 
