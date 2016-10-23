@@ -54,7 +54,12 @@ class Boid extends Vec3D {
 
         if (!p.cave.intersectsRay(r)) {
             p.flock.removeBoid(this);
+        } else {
+            if (p.cave2.intersectsRay(r)) {
+                p.flock.removeBoid(this);
+            }
         }
+
 
         Vec3D cavept = p.cave.getClosestVertexToPoint(this);
         float distpt = cavept.distanceToSquared(this);
