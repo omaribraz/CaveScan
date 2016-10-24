@@ -117,7 +117,7 @@ public class CaveScan extends PApplet {
         }
 
 
- //      meshpoints();
+        //      meshpoints();
 
 
         showOption[2] = true;
@@ -127,14 +127,14 @@ public class CaveScan extends PApplet {
 
         for (int i = 0; i < pts.size(); i++) {
             Vec3D f = pts.get(i);
-            if(i<2){
+            if (i < 2) {
                 println(f);
             }
             gs.addNode(new GraphNode(i, f.x, f.y, f.z));
             for (int j = 0; j < pts.size(); j++) {
                 Vec3D b = pts.get(j);
                 if (b != f) {
-                    if (b.distanceToSquared(f) < 75*75) {
+                    if (b.distanceToSquared(f) < 80 * 80) {
                         gs.addEdge(i, j, 0);
 //                        Line3D l1 = new Line3D(f, b);
 //                        lines.add(l1);
@@ -170,18 +170,42 @@ public class CaveScan extends PApplet {
 //            line(l.a.x, l.a.y, l.a.z, l.b.x, l.b.y, l.b.z);
 //        }
 
-        pathFinder = makePathFinder(3);
+        pathFinder = makePathFinder(4);
         usePathFinder(pathFinder);
 
-        drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
+        //       drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
 
-        drawRoute(rNodes, color(200, 0, 0), 5.0f);
+        //       drawRoute(rNodes, color(200, 0, 0), 5.0f);
+
+        //       for( int i= 0; i< frameCount; i++){
+        if (rNodes.length > frameCount) {
+            if (rNodes.length >= 2) {
+                pushStyle();
+                stroke(255);
+                strokeWeight(2);
+                noFill();
+                for (int i = 1; i < frameCount; i++)
+                    line(rNodes[i - 1].xf(), rNodes[i - 1].yf(), rNodes[i - 1].zf(), rNodes[i].xf(), rNodes[i].yf(), rNodes[i].zf());
+                // Route start node
+                strokeWeight(15.0f);
+                stroke(0, 0, 160);
+                fill(0, 0, 255);
+                point(rNodes[0].xf(), rNodes[0].yf(), rNodes[0].zf());
+                // Route end node
+                stroke(160, 0, 0);
+                fill(255, 0, 0);
+                point(rNodes[rNodes.length - 1].xf(), rNodes[rNodes.length - 1].yf(), rNodes[rNodes.length - 1].zf());
+                popStyle();
+            }
+        }else {
+            drawRoute(rNodes, color(200, 0, 0), 5.0f);
+        }
+
+        //       }
 
         if (showOption[0]) {
             drawNodes();
         }
-
-
 
 
         for (Boid b : flock.boids) {
@@ -197,9 +221,7 @@ public class CaveScan extends PApplet {
             }
         }
 
- //       flock.run();
-
-
+        //       flock.run();
 
 
 //        boidoctree.draw();
@@ -254,7 +276,7 @@ public class CaveScan extends PApplet {
         return pf;
     }
 
-    void usePathFinder(IGraphSearch pf){
+    void usePathFinder(IGraphSearch pf) {
         pf.search(start, end, true);
         rNodes = pf.getRoute();
         exploredEdges = pf.getExaminedEdges();
@@ -305,8 +327,8 @@ public class CaveScan extends PApplet {
     }
 
     private void meshsetup() {
-        mesh = new HEC_FromBinarySTLFile(sketchPath("data/" + "cave2.stl")).create();
-        cave = (TriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave2.stl"), STLReader.TRIANGLEMESH);
+        mesh = new HEC_FromBinarySTLFile(sketchPath("data/" + "cave3.stl")).create();
+        cave = (TriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave3.stl"), STLReader.TRIANGLEMESH);
 
         meshcentre = cave.computeCentroid();
 
@@ -419,10 +441,10 @@ public class CaveScan extends PApplet {
 
 
     private void readText() {
-        String[] attptList = loadStrings("data/" + "points.txt");
-        for (int i = attptList.length-1; i >= 0; i--) {
+        String[] attptList = loadStrings("data/" + "points2.txt");
+        for (int i = attptList.length - 1; i >= 0; i--) {
             String point[] = (split(attptList[i], ','));
-            if (point.length==3) {
+            if (point.length == 3) {
                 Vec3D Temp_PT = new Vec3D(Float.parseFloat(point[0]), Float.parseFloat(point[1]), Float.parseFloat(point[2]));
                 pts.add(Temp_PT);
             }
