@@ -50,19 +50,17 @@ class Boid extends Vec3D {
 
     void checkMesh() {
 
-        Ray3D r = new Ray3D(this, new Vec3D(0, 0, 1));
-
-        if (!p.cave.intersectsRay(r)) {
-            p.flock.removeBoid(this);
-        } else {
-            if (p.cave2.intersectsRay(r)) {
-                p.flock.removeBoid(this);
-            }
-        }
-
-
         Vec3D cavept = p.cave.getClosestVertexToPoint(this);
         float distpt = cavept.distanceToSquared(this);
+
+        Vec3D a1 = cavept.copy().subSelf(this);
+        Vec3D a2 = p.Normal.get(cavept);
+
+        float ang = a2.angleBetween(a1,true);
+        float ang2 = degrees(ang);
+        if (ang2 > 90) {
+            p.flock.removeBoid(this);
+        }
 
         if (distpt < 55 * 55) {
             p.flock.removeBoid(this);

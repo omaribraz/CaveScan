@@ -35,7 +35,6 @@ public class CaveScan extends PApplet {
 
     private ToxiclibsSupport gfx;
     TriangleMesh cave;
-    Mesh2 cave2 = new Mesh2(this, new String());
     private ArrayList<Vec3D> cavepts;
 
     private WB_Render render;
@@ -119,7 +118,6 @@ public class CaveScan extends PApplet {
 //            flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
 //        }
 //
-//        gfx = new ToxiclibsSupport(this);
 
         for (int i = 0; i < 20; i++) {
             for (int j = 0; j < 20; j++) {
@@ -129,19 +127,20 @@ public class CaveScan extends PApplet {
             }
         }
 
-        for (int j = 0; j < 10; j++) {
+
+       for (int j = 0; j < 10; j++) {
             for (int i = 0; i < pts.size(); i++) {
                 Vec3D v = pts.get(i);
-                Ray3D r = new Ray3D(v, new Vec3D(0, 0, 1));
-                if (!cave.intersectsRay(r)) {
+                Vec3D v1 = cave.getClosestVertexToPoint(v);
+                Vec3D v2 = v1.copy().subSelf(v.copy());
+                Vec3D v3 = Normal.get(v1);
+                float a1 = v3.angleBetween(v2,true);
+                float a2 = degrees(a1);
+                if(a2>90){
                     pts.remove(v);
-                } else {
-                    if (cave2.intersectsRay(r)) {
-                        pts.remove(v);
-                    }
                 }
             }
-        }
+      }
 
 
 //        showOption[2] = true;
@@ -225,7 +224,7 @@ public class CaveScan extends PApplet {
         fill(40, 120);
         noStroke();
         lights();
-        gfx.mesh(cave2, false, 0);
+        gfx.mesh(cave, false, 0);
         popMatrix();
 
 //        videoExport.saveFrame();
@@ -304,7 +303,6 @@ public class CaveScan extends PApplet {
     private void meshsetup() {
         mesh = new HEC_FromOBJFile(sketchPath("data/" + "cave.obj")).create();
         cave = (TriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave.stl"), STLReader.TRIANGLEMESH);
-        cave2.addMesh(cave);
 
 
         gfx = new ToxiclibsSupport(this);
