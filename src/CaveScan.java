@@ -35,6 +35,7 @@ public class CaveScan extends PApplet {
 
     private ToxiclibsSupport gfx;
     TriangleMesh cave;
+    float DIM = 1500;
     private ArrayList<Vec3D> cavepts;
     Vec3D meshcentre = new Vec3D();
 
@@ -109,15 +110,17 @@ public class CaveScan extends PApplet {
 
         setupassets();
 
+//        setpathfind();
+
         meshsetup();
 
-        readText();
+
 
 
         cam = new PeasyCam(this, meshcentre.x, meshcentre.y, 0, 2200);
 
 
-        float DIM = 1500;
+
         meshoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
         meshoctree.addAll(cavepts);
 
@@ -129,6 +132,67 @@ public class CaveScan extends PApplet {
 
 
         //      meshpoints();
+
+
+
+
+    }
+
+
+    public void draw() {
+        background(0);
+
+//        runpathfind();
+
+
+
+        for (Boid b : flock.boids) {
+            boidoctree.addBoid(b);
+        }
+
+        boidoctree.run();
+
+        if (frameCount < 10) {
+            for (int i = 0; i < flock.boids.size(); i++) {
+                Boid b = flock.boids.get(i);
+                b.checkMesh();
+            }
+        }
+
+           flock.run();
+
+
+//        boidoctree.draw();
+
+
+        meshrun();
+
+//        pushMatrix();
+//        fill(40, 120);
+//        noStroke();
+//        lights();
+//        gfx.mesh(cave, false, 0);
+//        popMatrix();
+
+//        videoExport.saveFrame();
+        //       }
+
+    }
+
+
+    private void setupassets() {
+        obj = loadShape("data/" + "drone.obj");
+        obj.scale(3);
+
+        cone = loadShape("data/" + "cone.obj");
+        cone.scale(5);
+
+        flock = new Flock(this);
+    }
+
+    private void setpathfind(){
+
+        readText();
 
         ptsoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
         ptsoctree.addAll(pts);
@@ -179,16 +243,10 @@ public class CaveScan extends PApplet {
         start = 0;
         end = 1;
         gs.compact();
-
-
     }
 
-
-    public void draw() {
-        background(0);
-
-
-//        for (Vec3D a : pts) {
+    private void runpathfind(){
+        //        for (Vec3D a : pts) {
 //            stroke(255);
 //            strokeWeight(2);
 //            gfx.point(a);
@@ -271,50 +329,6 @@ public class CaveScan extends PApplet {
         if (showOption[0]) {
             drawNodes();
         }
-
-
-        for (Boid b : flock.boids) {
-            boidoctree.addBoid(b);
-        }
-
-        boidoctree.run();
-
-        if (frameCount < 10) {
-            for (int i = 0; i < flock.boids.size(); i++) {
-                Boid b = flock.boids.get(i);
-                b.checkMesh();
-            }
-        }
-
-        //       flock.run();
-
-
-//        boidoctree.draw();
-
-
-        meshrun();
-
-//        pushMatrix();
-//        fill(40, 120);
-//        noStroke();
-//        lights();
-//        gfx.mesh(cave, false, 0);
-//        popMatrix();
-
-//        videoExport.saveFrame();
-        //       }
-
-    }
-
-
-    private void setupassets() {
-        obj = loadShape("data/" + "drone.obj");
-        obj.scale(3);
-
-        cone = loadShape("data/" + "cone.obj");
-        cone.scale(5);
-
-        flock = new Flock(this);
     }
 
 
