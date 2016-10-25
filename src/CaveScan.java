@@ -49,10 +49,14 @@ public class CaveScan extends PApplet {
     public HashMap<Vec3D, WB_Coord> CaveHe = new HashMap<>();
     public HashMap<WB_Coord, Integer> CaveSl = new HashMap<>();
     public HashMap<Vec3D, Vec3D> Normal = new HashMap<>();
+    public HashMap<Vec3D, Integer> ptscheck = new HashMap<>();
+    public HashMap<Vec3D, Integer> ptsslope = new HashMap<>();
+    public HashMap<Vec3D, Float> ptsvar = new HashMap<>();
 
 
     Octree meshoctree;
     Octree boidoctree;
+    Octree ptsoctree;
 
     Flock flock;
 
@@ -76,11 +80,18 @@ public class CaveScan extends PApplet {
 
     int start, end;
 
+    float minValue = 0;
+    float maxValue = 0;
+
 
     ArrayList<Vec3D> pts = new ArrayList<>();
     ArrayList<Line3D> lines = new ArrayList<>();
 
     ArrayList<Vec3D> pointsList = new ArrayList<>();
+    public ArrayList<Float> variable = new ArrayList<>();
+
+    public ArrayList<GraphEdge[]> pathtree = new ArrayList<>();
+    public ArrayList<Integer> endpts = new ArrayList<>();
 
     PeasyCam cam;
 
@@ -119,6 +130,9 @@ public class CaveScan extends PApplet {
 
         //      meshpoints();
 
+        ptsoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
+        ptsoctree.addAll(pts);
+
 
         showOption[2] = true;
         gs = new Graph();
@@ -127,17 +141,33 @@ public class CaveScan extends PApplet {
 
         for (int i = 0; i < pts.size(); i++) {
             Vec3D f = pts.get(i);
-            if (i < 2) {
-                println(f);
-            }
+            ptscheck.put(f, i);
+            Vec3D ptmesh = cave.getClosestVertexToPoint(f);
+            float meshrad = f.distanceTo(ptmesh);
+            int slppt = ptsslope.get(ptmesh);
+            float meshvariable = slppt / meshrad;
+            variable.add(meshvariable);
+            ptsvar.put(f,meshvariable);
+
+        }
+
+        maxValue = Collections.max(variable);
+        minValue = Collections.min(variable);
+
+        System.out.println("Max = " + Collections.max(variable));
+        System.out.println("Min = " + Collections.min(variable));
+
+        for (int i = 0; i < pts.size(); i++) {
+            Vec3D f = pts.get(i);
             gs.addNode(new GraphNode(i, f.x, f.y, f.z));
             for (int j = 0; j < pts.size(); j++) {
                 Vec3D b = pts.get(j);
                 if (b != f) {
                     if (b.distanceToSquared(f) < 80 * 80) {
-                        gs.addEdge(i, j, 0);
-//                        Line3D l1 = new Line3D(f, b);
-//                        lines.add(l1);
+                        float varline = ptsvar.get(f);
+                        gs.addEdge(i, j, varline);
+                        Line3D l1 = new Line3D(f, b);
+                        lines.add(l1);
                     }
                 }
             }
@@ -161,31 +191,67 @@ public class CaveScan extends PApplet {
 //        for (Vec3D a : pts) {
 //            stroke(255);
 //            strokeWeight(2);
-//            point(a.x, a.y, a.z);
+//            gfx.point(a);
 //    }
 
 //        for (Line3D l : lines) {
 //            strokeWeight(.1f);
 //            stroke(220);
-//            line(l.a.x, l.a.y, l.a.z, l.b.x, l.b.y, l.b.z);
+//            gfx.line(l);
 //        }
 
-        pathFinder = makePathFinder(4);
+
+        pathFinder = makePathFinder(3);
         usePathFinder(pathFinder);
 
-        //       drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
+//        System.out.println("obj = " + vaq.size());
 
-        //       drawRoute(rNodes, color(200, 0, 0), 5.0f);
+//              drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
 
-        //       for( int i= 0; i< frameCount; i++){
+//        if (exploredEdges != null) {
+//            pushStyle();
+//            noFill();
+//            stroke(0,0,255);
+//            strokeWeight(.2f);
+//            for (GraphEdge ge : exploredEdges) {
+//                    line(ge.from().xf(), ge.from().yf(), ge.from().zf(), ge.to().xf(), ge.to().yf(), ge.to().zf());
+//                }
+//            popStyle();
+//        }
+
+
+//              drawRoute(rNodes, color(200, 0, 0), 5.0f);
+
+
+        if (frameCount == 1) {
+            if (rNodes.length >= 2) {
+                for (int i = 1; i < rNodes.length; i++) {
+                    Vec3D pttrail = new Vec3D(rNodes[i].xf(), rNodes[i].yf(), rNodes[i].zf());
+                    int ptid = ptscheck.get(pttrail);
+                    endpts.add(ptid);
+                }
+            }
+        }
+
+
+        for (int i = 0; i < endpts.size(); i++) {
+            int pte = endpts.get(i);
+            usePathFinderArray(pathFinder, 0, pte);
+        }
+
+        for (int i = 0; i < frameCount; i++) {
+            drawEdges(pathtree.get(i), color(0, 0, 255, 20), 1.8f);
+        }
+
         if (rNodes.length > frameCount) {
             if (rNodes.length >= 2) {
                 pushStyle();
-                stroke(255);
-                strokeWeight(2);
+                stroke(255, 0, 0);
+                strokeWeight(4);
                 noFill();
-                for (int i = 1; i < frameCount; i++)
+                for (int i = 1; i < frameCount; i++) {
                     line(rNodes[i - 1].xf(), rNodes[i - 1].yf(), rNodes[i - 1].zf(), rNodes[i].xf(), rNodes[i].yf(), rNodes[i].zf());
+                }
                 // Route start node
                 strokeWeight(15.0f);
                 stroke(0, 0, 160);
@@ -197,11 +263,10 @@ public class CaveScan extends PApplet {
                 point(rNodes[rNodes.length - 1].xf(), rNodes[rNodes.length - 1].yf(), rNodes[rNodes.length - 1].zf());
                 popStyle();
             }
-        }else {
+        } else {
             drawRoute(rNodes, color(200, 0, 0), 5.0f);
         }
 
-        //       }
 
         if (showOption[0]) {
             drawNodes();
@@ -282,6 +347,12 @@ public class CaveScan extends PApplet {
         exploredEdges = pf.getExaminedEdges();
     }
 
+    void usePathFinderArray(IGraphSearch pf, int start1, int end1) {
+        pf.search(start1, end1, true);
+        GraphEdge[] e1 = pf.getExaminedEdges();
+        pathtree.add(e1);
+    }
+
     void drawRoute(GraphNode[] r, int lineCol, float sWeight) {
         if (r.length >= 2) {
             pushStyle();
@@ -327,8 +398,8 @@ public class CaveScan extends PApplet {
     }
 
     private void meshsetup() {
-        mesh = new HEC_FromBinarySTLFile(sketchPath("data/" + "cave3.stl")).create();
-        cave = (TriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave3.stl"), STLReader.TRIANGLEMESH);
+        mesh = new HEC_FromBinarySTLFile(sketchPath("data/" + "cave2.stl")).create();
+        cave = (TriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave2.stl"), STLReader.TRIANGLEMESH);
 
         meshcentre = cave.computeCentroid();
 
@@ -366,12 +437,13 @@ public class CaveScan extends PApplet {
 
             int slopeint = (int) slope;
             Slope.put(vertex1, slopeint);
+            ptsslope.put(vertex, slopeint);
             CaveHe.put(vertex, vertex1);
             Normal.put(vertex, mnormv);
         }
 
         for (HE_Vertex a : mesh.getVerticesAsArray()) {
-            a.setColor(color(40, 30));
+            a.setColor(color(40, 60));
         }
         for (HE_Vertex a : mesh.getVerticesAsArray()) {
             int slp = Slope.get(a);
@@ -441,7 +513,7 @@ public class CaveScan extends PApplet {
 
 
     private void readText() {
-        String[] attptList = loadStrings("data/" + "points2.txt");
+        String[] attptList = loadStrings("data/" + "points.txt");
         for (int i = attptList.length - 1; i >= 0; i--) {
             String point[] = (split(attptList[i], ','));
             if (point.length == 3) {
