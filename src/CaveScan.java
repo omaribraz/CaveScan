@@ -26,14 +26,18 @@ import com.hamoid.*;
 
 import pathfinder.*;
 
+import controlP5.*;
+
 
 public class CaveScan extends PApplet {
+
+    int slowFc = 0;
 
     PShape obj;
     PShape cone;
 
 
-    private ToxiclibsSupport gfx;
+    public ToxiclibsSupport gfx;
     TriangleMesh cave;
     float DIM = 1500;
     private ArrayList<Vec3D> cavepts;
@@ -53,6 +57,7 @@ public class CaveScan extends PApplet {
     public HashMap<Vec3D, Integer> ptscheck = new HashMap<>();
     public HashMap<Vec3D, Integer> ptsslope = new HashMap<>();
     public HashMap<Vec3D, Float> ptsvar = new HashMap<>();
+
 
 
     Octree meshoctree;
@@ -79,22 +84,28 @@ public class CaveScan extends PApplet {
 
     boolean[] showOption = new boolean[3];
 
+    boolean pathfind1 = false;
+    boolean pathfind2 = true;
+
+
     int start, end;
 
-    float minValue = 0;
-    float maxValue = 0;
+    float minValue;
+    float maxValue;
+    float slidermin;
+    float slidermax;
 
 
     ArrayList<Vec3D> pts = new ArrayList<>();
-    ArrayList<Line3D> lines = new ArrayList<>();
+    ArrayList<MeshLine> lines = new ArrayList<>();
 
-    ArrayList<Vec3D> pointsList = new ArrayList<>();
     public ArrayList<Float> variable = new ArrayList<>();
 
     public ArrayList<GraphEdge[]> pathtree = new ArrayList<>();
     public ArrayList<Integer> endpts = new ArrayList<>();
 
     PeasyCam cam;
+    ControlP5 cp5;
 
 
     public static void main(String[] args) {
@@ -110,30 +121,41 @@ public class CaveScan extends PApplet {
 
         setupassets();
 
-//        setpathfind();
-
         meshsetup();
 
-
+        if (pathfind1 || pathfind2) setpathfind();
 
 
         cam = new PeasyCam(this, meshcentre.x, meshcentre.y, 0, 2200);
+        cp5 = new ControlP5(this);
 
+        if (pathfind1) {
+            cp5.addSlider("slidermin")
+                    .setPosition(100, 50)
+                    .setRange(0, 1)
+                    .setValue(0)
+                    .setNumberOfTickMarks(50);
 
+            cp5.addSlider("slidermax")
+                    .setPosition(100, 100)
+                    .setRange(0, 2)
+                    .setValue(1)
+                    .setNumberOfTickMarks(50);
 
-        meshoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
-        meshoctree.addAll(cavepts);
-
-        boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
-
-        for (int i = 0; i < 250; i++) {
-            flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
+            cp5.setAutoDraw(false);
         }
 
 
-        //      meshpoints();
+//        meshoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
+//        meshoctree.addAll(cavepts);
+//        boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
+//
+//        for (int i = 0; i < 250; i++) {
+//            flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
+//        }
 
 
+//        meshpoints();
 
 
     }
@@ -142,41 +164,64 @@ public class CaveScan extends PApplet {
     public void draw() {
         background(0);
 
-//        runpathfind();
 
+        if (pathfind1) {
+            renderpath();
 
-
-        for (Boid b : flock.boids) {
-            boidoctree.addBoid(b);
-        }
-
-        boidoctree.run();
-
-        if (frameCount < 10) {
-            for (int i = 0; i < flock.boids.size(); i++) {
-                Boid b = flock.boids.get(i);
-                b.checkMesh();
+            for (MeshLine l : lines) {
+                l.drawline();
             }
         }
 
-           flock.run();
+
+        if (pathfind2)runpathfind();
+
+
+//        for (Boid b : flock.boids) {
+//            boidoctree.addBoid(b);
+//        }
+//
+//        boidoctree.run();
+//
+//        if (frameCount < 10) {
+//            for (int i = 0; i < flock.boids.size(); i++) {
+//                Boid b = flock.boids.get(i);
+//                b.checkMesh();
+//            }
+//        }
+//
+//        flock.run();
 
 
 //        boidoctree.draw();
 
 
-        meshrun();
+//        meshrun();
 
-//        pushMatrix();
-//        fill(40, 120);
-//        noStroke();
-//        lights();
-//        gfx.mesh(cave, false, 0);
-//        popMatrix();
+        pushMatrix();
+        fill(40, 120);
+        noStroke();
+        lights();
+        gfx.mesh(cave, false, 0);
+        popMatrix();
 
 //        videoExport.saveFrame();
-        //       }
 
+        if (pathfind1)  gui();
+
+    }
+
+    private void gui() {
+        hint(DISABLE_DEPTH_TEST);
+        cam.beginHUD();
+        cp5.draw();
+        cam.endHUD();
+        if (cp5.isMouseOver() == true) {
+            cam.setActive(false);
+        } else {
+            cam.setActive(true);
+        }
+        hint(ENABLE_DEPTH_TEST);
     }
 
 
@@ -190,7 +235,7 @@ public class CaveScan extends PApplet {
         flock = new Flock(this);
     }
 
-    private void setpathfind(){
+    private void setpathfind() {
 
         readText();
 
@@ -209,17 +254,23 @@ public class CaveScan extends PApplet {
             Vec3D ptmesh = cave.getClosestVertexToPoint(f);
             float meshrad = f.distanceTo(ptmesh);
             int slppt = ptsslope.get(ptmesh);
-            float meshvariable = slppt / meshrad;
+            float meshvariable = slppt / meshrad * meshrad;
             variable.add(meshvariable);
-            ptsvar.put(f,meshvariable);
-
         }
 
         maxValue = Collections.max(variable);
         minValue = Collections.min(variable);
 
-        System.out.println("Max = " + Collections.max(variable));
-        System.out.println("Min = " + Collections.min(variable));
+        System.out.println("Min = " + minValue);
+        System.out.println("Max = " + maxValue);
+
+
+        for (int i = 0; i < pts.size(); i++) {
+            Vec3D f = pts.get(i);
+            float var1 = variable.get(i);
+            float var2 = map(var1, minValue, maxValue, 0.12f, 1.49f);
+            ptsvar.put(f, var2);
+        }
 
         for (int i = 0; i < pts.size(); i++) {
             Vec3D f = pts.get(i);
@@ -229,8 +280,11 @@ public class CaveScan extends PApplet {
                 if (b != f) {
                     if (b.distanceToSquared(f) < 80 * 80) {
                         float varline = ptsvar.get(f);
+                        int c1 = color(255, 0, 0);
+                        int c2 = color(0, 255, 0);
+                        int c = lerpColor(c1, c2, varline);
                         gs.addEdge(i, j, varline);
-                        Line3D l1 = new Line3D(f, b);
+                        MeshLine l1 = new MeshLine(this, f, b, c);
                         lines.add(l1);
                     }
                 }
@@ -245,24 +299,44 @@ public class CaveScan extends PApplet {
         gs.compact();
     }
 
-    private void runpathfind(){
-        //        for (Vec3D a : pts) {
-//            stroke(255);
-//            strokeWeight(2);
-//            gfx.point(a);
-//    }
+    private void renderpath() {
 
-//        for (Line3D l : lines) {
-//            strokeWeight(.1f);
-//            stroke(220);
-//            gfx.line(l);
-//        }
+        lines.clear();
+        ptsvar.clear();
+
+        for (int i = 0; i < pts.size(); i++) {
+            Vec3D f = pts.get(i);
+            float var1 = variable.get(i);
+            float var2 = map(var1, minValue, maxValue, slidermin, slidermax);
+            ptsvar.put(f, var2);
+        }
+
+        for (int i = 0; i < pts.size(); i++) {
+            Vec3D f = pts.get(i);
+            for (int j = 0; j < pts.size(); j++) {
+                Vec3D b = pts.get(j);
+                if (b != f) {
+                    if (b.distanceToSquared(f) < 80 * 80) {
+                        float varline = ptsvar.get(f);
+                        int c1 = color(255, 0, 0);
+                        int c2 = color(0, 255, 0);
+                        int c = lerpColor(c1, c2, varline);
+                        MeshLine l1 = new MeshLine(this, f, b, c);
+                        lines.add(l1);
+                    }
+                }
+            }
+        }
+    }
+
+    private void runpathfind() {
+
+
 
 
         pathFinder = makePathFinder(3);
         usePathFinder(pathFinder);
 
-//        System.out.println("obj = " + vaq.size());
 
 //              drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
 
@@ -297,17 +371,17 @@ public class CaveScan extends PApplet {
             usePathFinderArray(pathFinder, 0, pte);
         }
 
-        for (int i = 0; i < frameCount; i++) {
-            drawEdges(pathtree.get(i), color(0, 0, 255, 20), 1.8f);
-        }
-
-        if (rNodes.length > frameCount) {
+        if (rNodes.length > slowFc) {
             if (rNodes.length >= 2) {
                 pushStyle();
                 stroke(255, 0, 0);
                 strokeWeight(4);
                 noFill();
-                for (int i = 1; i < frameCount; i++) {
+
+                if(frameCount%5==0) slowFc++;
+
+                for (int i = 1; i < slowFc; i++) {
+                    drawEdges(pathtree.get(i), color(0, 0, 255, 20), 1.8f);
                     line(rNodes[i - 1].xf(), rNodes[i - 1].yf(), rNodes[i - 1].zf(), rNodes[i].xf(), rNodes[i].yf(), rNodes[i].zf());
                 }
                 // Route start node
@@ -414,12 +488,13 @@ public class CaveScan extends PApplet {
     private void meshsetup() {
         mesh = new HEC_FromBinarySTLFile(sketchPath("data/" + "cave2.stl")).create();
         cave = (TriangleMesh) new STLReader().loadBinary(sketchPath("data/" + "cave2.stl"), STLReader.TRIANGLEMESH);
-
+        obj.getVertexCount();
         meshcentre = cave.computeCentroid();
 
 
         gfx = new ToxiclibsSupport(this);
         render = new WB_Render(this);
+
 
 //        WB_KDTree vertexTree = mesh.getVertexTree();
 //        int novert1 = cave.getNumVertices();
@@ -492,6 +567,7 @@ public class CaveScan extends PApplet {
 //        lights();
 //        gfx.mesh(cave, false, 0);
 //        popMatrix();
+
 
     }
 

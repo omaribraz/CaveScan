@@ -56,7 +56,7 @@ class Boid extends Vec3D {
         Vec3D a1 = cavept.copy().subSelf(this);
         Vec3D a2 = p.Normal.get(cavept);
 
-        float ang = a2.angleBetween(a1,true);
+        float ang = a2.angleBetween(a1, true);
         float ang2 = degrees(ang);
         if (ang2 > 90) {
             p.flock.removeBoid(this);
@@ -110,7 +110,7 @@ class Boid extends Vec3D {
     }
 
     void trail() {
-        trail t = new trail(p, this.copy(), vel.copy(), this);
+        new trail(p, this.copy(), vel.copy(), this);
     }
 
     void trailupdate() {
