@@ -67,7 +67,6 @@ class Boid extends Vec3D {
         }
     }
 
-
     private void flock() {
 
         List boidpos = p.boidoctree.getPointsWithinSphere(this.copy(), 120);
@@ -91,9 +90,7 @@ class Boid extends Vec3D {
         }
     }
 
-
     private void update() {
-
         vel.addSelf(acc);
         vel.limit(maxspeed);
         this.addSelf(vel);
@@ -129,7 +126,6 @@ class Boid extends Vec3D {
         }
         p.endShape();
     }
-
 
     private void render() {
         float theta = vel.headingXY() + PApplet.radians(90);
@@ -197,7 +193,6 @@ class Boid extends Vec3D {
         }
     }
 
-
     // Cohesion
     private Vec3D cohesion(List<Boid> boids) {
         float neighbordist = 80.0f * 80.0f;
@@ -217,6 +212,8 @@ class Boid extends Vec3D {
             return new Vec3D(0, 0, 0);
         }
     }
+
+    //Seek Trail
 
 //    Vec3D seektrail(ArrayList tPop) {
 //        float neighbordist = 90;
@@ -272,7 +269,7 @@ class Boid extends Vec3D {
             scned = p.meshoctree.getPointsWithinSphere(this.copy(), 100);
             if (scned != null) {
                 for (Vec3D a : scned) {
-                    p.scanPtsV.add(a);
+                   if(!p.scanPtsV.contains(a)) p.scanPtsV.add(a);
                 }
             }
 

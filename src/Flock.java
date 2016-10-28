@@ -14,6 +14,7 @@ public class Flock {
         p = _p;
         boids = new ArrayList<>();
     }
+
     void run() {
         for (Boid b : boids) {
             b.run();

@@ -14,10 +14,10 @@ class Octree extends PointOctree {
         super(o,d);
         p = _p;
     }
+
     void addBoid(Boid b) {
         addPoint(b);
     }
-
 
     void run() {
         updateTree();
