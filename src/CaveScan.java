@@ -37,12 +37,9 @@ public class CaveScan extends PApplet {
     boolean pathfind1 = false;
     boolean pathfind2 = false;
 
-    public boolean bounce = true;
-    public boolean reverse = false;
+    boolean showscanmesh = false;
 
-    boolean showscanmesh = true;
-
-    boolean flockfly = true;
+    boolean flockfly = false;
 
     int slowFc = 0;
 
@@ -95,6 +92,7 @@ public class CaveScan extends PApplet {
 
     ArrayList<Vec3D> pts = new ArrayList<>();
     ArrayList<MeshLine> lines = new ArrayList<>();
+    ArrayList<Vec3D> circpts = new ArrayList<>();
 
     public ArrayList<Float> variable = new ArrayList<>();
     public ArrayList<GraphEdge[]> pathtree = new ArrayList<>();
@@ -132,6 +130,8 @@ public class CaveScan extends PApplet {
             }
         }
 
+        readpath();
+
     }
 
 
@@ -146,6 +146,7 @@ public class CaveScan extends PApplet {
         }
 
         if (pathfind2) runpathfind();
+
 
         if (flockfly) {
             for (Boid b : flock.boids) {
@@ -166,6 +167,7 @@ public class CaveScan extends PApplet {
 //        boidoctree.draw();
         }
 
+
         meshrun();
 
 //        videoExport.saveFrame();
@@ -173,6 +175,8 @@ public class CaveScan extends PApplet {
         if (pathfind1) gui();
 
     }
+
+
 
     private void setgui() {
         cp5 = new ControlP5(this);
@@ -212,6 +216,15 @@ public class CaveScan extends PApplet {
         cone.scale(5);
 
         flock = new Flock(this);
+    }
+    
+    private void readpath() {
+        String linept[] = loadStrings("data/" + "path.txt");
+        for (int i = 0; i < linept.length; i++) {
+            String[] vec = split(linept[i], ",");
+            Vec3D a = new Vec3D(Float.parseFloat(vec[0]), Float.parseFloat(vec[1]), Float.parseFloat(vec[2]));
+            circpts.add(a);
+        }
     }
 
     private void setpathfind() {
@@ -334,8 +347,11 @@ public class CaveScan extends PApplet {
                     Vec3D pttrail = new Vec3D(rNodes[i].xf(), rNodes[i].yf(), rNodes[i].zf());
                     int ptid = ptscheck.get(pttrail);
                     endpts.add(ptid);
+                }
+                for (int i = 0; i < rNodes.length; i++) {
                     String a = (Float.toString(rNodes[i].xf()) + "," + Float.toString(rNodes[i].yf()) + "," + Float.toString(rNodes[i].zf()));
-                    pathpts[i - 1] = a;
+                    pathpts[i] = a;
+                    System.out.println(a);
                 }
                 saveStrings("data/" + "path.txt", pathpts);
             }
@@ -514,14 +530,14 @@ public class CaveScan extends PApplet {
             meshoctree.addAll(cavepts);
         }
 
-        if (!showscanmesh)gfx = new ToxiclibsSupport(this);
+        if (!showscanmesh) gfx = new ToxiclibsSupport(this);
         if (showscanmesh) render = new WB_Render(this);
     }
 
     private void meshrun() {
 
         if (showscanmesh) {
-            if(flockfly) {
+            if (flockfly) {
                 scanPts = new ArrayList<>();
                 for (Vec3D b : scanPtsV) {
                     HE_Vertex c = (HE_Vertex) CaveHe.get(b);
@@ -535,7 +551,7 @@ public class CaveScan extends PApplet {
                 }
             }
 
-            if(!flockfly){
+            if (!flockfly) {
                 for (HE_Vertex a : mesh.getVertices()) {
                     int b = CaveSl.get(a);
                     a.setColor(color(b, 60));

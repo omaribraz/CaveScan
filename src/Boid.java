@@ -21,6 +21,8 @@ class Boid extends Vec3D {
     private float maxforce;
     private float maxspeed;
     public ArrayList<trail> trailPop;
+    private boolean bounce = true;
+    private boolean reverse = false;
 
 
     Boid(CaveScan _p, Vec3D pos, Vec3D _vel) {
@@ -253,10 +255,10 @@ class Boid extends Vec3D {
 
         if (cavepoints != null) {
             if (cavepoints.size() > 0) {
-                if (p.reverse) {
+                if (reverse) {
                     vel.scaleSelf(-3);
                 }
-                if (p.bounce) {
+                if (bounce) {
                     Vec3D clstpt = p.cave.getClosestVertexToPoint(this);
                     Vec3D norm = p.Normal.get(clstpt);
                     float velnorm = vel.dot(norm.normalize());
