@@ -18,7 +18,7 @@ public class Flock {
     void run() {
         for (Boid b : boids) {
             b.run();
-            b.trailupdate();
+          if(p.leavetrail)  b.trailupdate();
         }
 
     }

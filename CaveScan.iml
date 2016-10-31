@@ -16,5 +16,6 @@
     <orderEntry type="library" name="VideoExport" level="project" />
     <orderEntry type="library" name="Path_Finder" level="project" />
     <orderEntry type="library" name="controlP5" level="project" />
+    <orderEntry type="library" name="volumeutils" level="project" />
   </component>
 </module>

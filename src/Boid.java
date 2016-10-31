@@ -39,7 +39,7 @@ class Boid extends Vec3D {
     void run() {
         flock();
         if ((p.frameCount % 3 == 0) && (p.frameCount > 11)) {
-            //          trail();
+            if(p.leavetrail)         trail();
         }
         update();
         if (p.frameCount > 10) borders();
