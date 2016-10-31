@@ -39,7 +39,7 @@ public class CaveScan extends PApplet {
 
     boolean showscanmesh = false;
 
-    boolean flockfly = false;
+    boolean flockfly = true;
 
     int slowFc = 0;
 
@@ -149,11 +149,9 @@ public class CaveScan extends PApplet {
 
 
         if (flockfly) {
-            for (Boid b : flock.boids) {
-                boidoctree.addBoid(b);
-            }
-
             boidoctree.run();
+
+
 
             if (frameCount < 10) {
                 for (int i = 0; i < flock.boids.size(); i++) {
@@ -217,7 +215,7 @@ public class CaveScan extends PApplet {
 
         flock = new Flock(this);
     }
-    
+
     private void readpath() {
         String linept[] = loadStrings("data/" + "path.txt");
         for (int i = 0; i < linept.length; i++) {
