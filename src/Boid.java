@@ -146,7 +146,7 @@ class Boid extends Vec3D {
 
     // Separation
     private Vec3D separate(List<Boid> boids) {
-        float desiredseparation = 45.0f * 45.0f;
+        float desiredseparation = 60.0f * 60.0f;
         Vec3D steer = new Vec3D(0, 0, 0);
         int count = 0;
         for (Boid other : boids) {
@@ -259,8 +259,17 @@ class Boid extends Vec3D {
                     vel.scaleSelf(-3);
                 }
                 if (bounce) {
-                    Vec3D clstpt = p.cave.getClosestVertexToPoint(this);
-                    Vec3D norm = p.Normal.get(clstpt);
+                    Vec3D var1 = null;
+                    float var3 = 3.4028235E38F;
+                    for (int i = 0; i < cavepoints.size(); i++) {
+                        Vec3D vara = cavepoints.get(i);
+                        float dista = vara.distanceToSquared(this);
+                        if (dista < var3) {
+                            var1 = vara;
+                            var3 = dista;
+                        }
+                    }
+                    Vec3D norm = p.Normal.get(var1);
                     float velnorm = vel.dot(norm.normalize());
                     Vec3D refl1 = norm.normalize().scaleSelf(velnorm);
                     vel = vel.subSelf(refl1.scaleSelf(2));
@@ -271,7 +280,7 @@ class Boid extends Vec3D {
             scned = p.meshoctree.getPointsWithinSphere(this.copy(), 100);
             if (scned != null) {
                 for (Vec3D a : scned) {
-                   if(!p.scanPtsV.contains(a)) p.scanPtsV.add(a);
+                    if (!p.scanPtsV.contains(a)) p.scanPtsV.add(a);
                 }
             }
 
