@@ -1,3 +1,7 @@
+/**
+ * Created by omar on 10/31/2016.
+ */
+
 import toxi.geom.ReadonlyVec3D;
 import toxi.geom.Shape3D;
 import toxi.geom.Sphere;
@@ -5,10 +9,6 @@ import toxi.geom.Vec3D;
 import toxi.geom.mesh.Mesh3D;
 
 import java.util.List;
-
-/**
- * Created by omar on 10/31/2016.
- */
 
 public class Pathagent extends Vec3D {
     private CaveScan p;
@@ -24,9 +24,9 @@ public class Pathagent extends Vec3D {
     }
 
     public void run() {
-            move();
-            update();
-            render();
+        move();
+        update();
+        render();
     }
 
     private void update() {
@@ -71,8 +71,9 @@ public class Pathagent extends Vec3D {
 //        p.translate(x, y, z);
 //        p.sphere(dia);
 //        p.popMatrix();
-        a = new Sphere(this, dia);
 //        Mesh3D a1 = a.toMesh(a,256);
+        a = new Sphere(this, dia);
+        p.noFill();
         p.stroke(255, 0, 0);
         p.gfx.sphere(a, 8);
     }
