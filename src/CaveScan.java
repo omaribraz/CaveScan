@@ -37,14 +37,14 @@ public class CaveScan extends PApplet {
 // Booleans
 
     boolean pathfind1 = false;
-    boolean pathfind2 = true;
+    boolean pathfind2 = false;
 
     boolean showscanmesh = false;
 
     boolean flockfly = false;
     boolean leavetrail = false;
 
-    boolean makecorridor = false;
+    boolean makecorridor = true;
 
     int slowFc = 0;
 
@@ -101,7 +101,9 @@ public class CaveScan extends PApplet {
 
     public ArrayList<Float> variable = new ArrayList<>();
     public ArrayList<Integer> endpts = new ArrayList<>();
-    public ArrayList<Pathagent> pathpts = new ArrayList<>();
+    public ArrayList<Pathagent> pathagtpts = new ArrayList<>();
+
+    ArrayList<String> pathptsfile = new ArrayList<>();
 
 
     float ballvel = 0f;
@@ -170,7 +172,7 @@ public class CaveScan extends PApplet {
             corridor = new WETriangleMesh();
             for (Vec3D a : circpts) {
                 Pathagent b = new Pathagent(this, a);
-                pathpts.add(b);
+                pathagtpts.add(b);
             }
         }
 
@@ -257,11 +259,45 @@ public class CaveScan extends PApplet {
     }
 
     private void readpath() {
+
+
         String linept[] = loadStrings("data/" + "path.txt");
+        int stringcount = 0;
+
         for (int i = 0; i < linept.length; i++) {
-            String[] vec = split(linept[i], ",");
-            Vec3D a = new Vec3D(Float.parseFloat(vec[0]), Float.parseFloat(vec[1]), Float.parseFloat(vec[2]));
-            circpts.add(a);
+            if (linept[i].equals("!")) {
+                stringcount++;
+            }
+        }
+
+        Integer[] splitnumbers = new Integer[stringcount];
+        int stringcount2 = 0;
+
+        for (int i = 0; i < linept.length; i++) {
+            if (linept[i].equals("!")) {
+                splitnumbers[stringcount2]=i;
+                stringcount2++;
+            }
+        }
+
+        
+        String[][] ptslpit = new String[stringcount][];
+        for (int i = 0; i < splitnumbers.length; i++) {
+            if(i==0) {
+                ptslpit[i] = (Arrays.copyOfRange(linept, 0, splitnumbers[i] - 1));
+            }
+            if((i>0)&&(i<splitnumbers.length)) {
+               ptslpit[i] = (Arrays.copyOfRange(linept, (splitnumbers[i-1]+1), (splitnumbers[i]-1)));
+            }
+        }
+
+
+        for (int i = 0; i < ptslpit.length; i++) {
+            for (int j = 0; j < ptslpit[i].length; j++) {
+                String[] vec = split(ptslpit[i][j], ",");
+                Vec3D a = new Vec3D(Float.parseFloat(vec[0]), Float.parseFloat(vec[1]), Float.parseFloat(vec[2]));
+                circpts.add(a);
+            }
         }
     }
 
@@ -366,8 +402,17 @@ public class CaveScan extends PApplet {
         drawpath(1);
 
 //        pathFinder = makePathFinder(3);
-//        usePathFinder(pathFinder, 875, 586);
+//        usePathFinder(pathFinder, 0, 452);
 //        drawpath(586);
+
+        String[] pathpts = new String[pathptsfile.size()];
+
+        for(int i = 0; i<pathptsfile.size(); i++ ){
+            String a = pathptsfile.get(i);
+            pathpts[i] = a;
+        }
+
+        saveStrings("data/" + "path.txt", pathpts);
 
 
     }
@@ -388,8 +433,6 @@ public class CaveScan extends PApplet {
 
 //              drawRoute(rNodes, color(200, 0, 0), 5.0f);
 
-        String[] pathpts = new String[rNodes.length];
-
 
         if (frameCount == 1) {
             if (rNodes.length >= 2) {
@@ -400,10 +443,9 @@ public class CaveScan extends PApplet {
                 }
                 for (int i = 0; i < rNodes.length; i++) {
                     String a = (Float.toString(rNodes[i].xf()) + "," + Float.toString(rNodes[i].yf()) + "," + Float.toString(rNodes[i].zf()));
-                    pathpts[i] = a;
-//                    System.out.println(a);
+                    pathptsfile.add(a);
                 }
-                saveStrings("data/" + "path" + var1 + ".txt", pathpts);
+                pathptsfile.add("!");
             }
         }
 
@@ -449,7 +491,7 @@ public class CaveScan extends PApplet {
             ballvel = 0;
 
             if (ballmove) {
-                for (Pathagent a : pathpts) {
+                for (Pathagent a : pathagtpts) {
                     a.run();
                 }
 
@@ -458,7 +500,7 @@ public class CaveScan extends PApplet {
                 strokeWeight(6);
                 stroke(0, 255, 0);
                 beginShape();
-                for (Pathagent a : pathpts) {
+                for (Pathagent a : pathagtpts) {
                     curveVertex(a.x, a.y, a.z);
                 }
                 endShape();
@@ -473,7 +515,7 @@ public class CaveScan extends PApplet {
             if (!ballmove) {
                 if (!buildmesh) {
                     brush.setSize(brushSize.update());
-                    for (Pathagent a : pathpts) {
+                    for (Pathagent a : pathagtpts) {
                         brush.drawAtAbsolutePos(new Vec3D(a.x - meshcentre.x, a.y - meshcentre.y, a.z - meshcentre.z), density);
                     }
                     volume.closeSides();
@@ -503,6 +545,8 @@ public class CaveScan extends PApplet {
 //                }
                     buildmesh1 = true;
                 }
+
+                corridor.saveAsOBJ(sketchPath("data/" +"corridor.obj"));
 
                 pushMatrix();
                 stroke(255, 0, 0);
