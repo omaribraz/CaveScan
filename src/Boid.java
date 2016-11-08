@@ -250,7 +250,7 @@ class Boid extends Vec3D {
     private void borders() {
         List<Vec3D> cavepoints = null;
 
-        cavepoints = p.meshoctree.getPointsWithinSphere(this.copy(), 50);
+        cavepoints = p.meshoctree.getPointsWithinSphere(this.copy(), 90);
 
 
         if (cavepoints != null) {

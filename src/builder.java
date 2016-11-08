@@ -1,45 +1,29 @@
-/**
- * Created by omar on 10/31/2016.
- */
-
-import toxi.geom.ReadonlyVec3D;
-import toxi.geom.Shape3D;
-import toxi.geom.Sphere;
+import processing.core.PApplet;
 import toxi.geom.Vec3D;
-import toxi.geom.mesh.Mesh3D;
 
 import java.util.List;
 
 import static processing.core.PApplet.degrees;
 
-public class Pathagent extends Vec3D {
+/**
+ * Created by omar on 11/8/2016.
+ */
+public class builder extends Vec3D {
+
     private CaveScan p;
     private Vec3D vel;
-    public Sphere a;
-    public Mesh3D b;
-    private float dia = 60;
-    private float dia2 = 120;
-    int type;
+    private float dia = 120;
 
-    Pathagent(CaveScan _p, Vec3D pos, int _type) {
+    builder(CaveScan _p, Vec3D pos) {
         super(pos);
         p = _p;
         vel = new Vec3D(0, 0, 0);
-        type = _type;
-        this.z += 10;
     }
 
     public void run() {
-        if (type == 1) move();
+        move();
         update();
         render();
-    }
-
-    private void update() {
-        vel.limit(20.7f);
-        p.ballvel += vel.magnitude();
-        this.addSelf(vel);
-        vel.scaleSelf(0);
     }
 
     private void move() {
@@ -70,31 +54,38 @@ public class Pathagent extends Vec3D {
                 if (ang2 > 90) {
                     a = a.copy().scaleSelf(-1);
                 }
-
-                if (rad < (dia + 5)) {
-//                    a.normalize();
                     a = a.copy().scaleSelf(1 / rad);
+
+                    if(a.magnitude()<3){
+                        Vec3D b = new Vec3D(p.random(-p.TWO_PI, p.TWO_PI), p.random(-p.TWO_PI, p.TWO_PI), p.random(-p.TWO_PI, p.TWO_PI));
+                        a.addSelf(b);
+                    }
                     vel.addSelf(a);
-                } else {
-                    vel.scaleSelf(0);
                 }
             }
         }
+
+
+
+    private void update() {
+        vel.limit(20.7f);
+        this.addSelf(vel);
+        vel.scaleSelf(0);
     }
 
     private void render() {
-//        p.stroke(255, 0, 0);
-//        p.pushMatrix();
-//        p.translate(x, y, z);
-//        p.sphere(dia);
-//        p.popMatrix();
-        if (type == 1) a = new Sphere(this, dia);
-        if (type == 2) a = new Sphere(this, dia2);
-        // b = a.toMesh(12);
-//        p.noFill();
-//        p.stroke(255, 0, 0);
-//        p.gfx.sphere(a, 8);
+        float theta = vel.headingXY() + PApplet.radians(90);
+        p.stroke(255);
+        p.pushMatrix();
+        p.translate(x, y, z);
+        p.rotate(theta);
+        p.obj.setFill(p.color(255, 255, 255));
+        p.obj.setStroke(100);
+        p.obj.scale(1);
+        p.shape(p.obj);
+        p.popMatrix();
     }
+
 
 
 }

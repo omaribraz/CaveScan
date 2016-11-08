@@ -41,7 +41,7 @@ public class CaveScan extends PApplet {
 
     boolean showscanmesh = false;
 
-    boolean flockfly = false;
+    boolean flockfly = true;
     boolean leavetrail = false;
 
     boolean makecorridor = true;
@@ -103,6 +103,7 @@ public class CaveScan extends PApplet {
     public ArrayList<Float> variable = new ArrayList<>();
     public ArrayList<Integer> endpts = new ArrayList<>();
     public ArrayList<Pathagent> pathagtpts = new ArrayList<>();
+    public ArrayList<builder> builderpop = new ArrayList<>();
 
     ArrayList<String> pathptsfile = new ArrayList<>();
 
@@ -150,83 +151,101 @@ public class CaveScan extends PApplet {
 
         if ((makecorridor) || (pathfind1)) {
             volume = new VolumetricSpaceArray(SCALE.scaleSelf(20), DIMX, DIMY, DIMZ);
-            brush = new RoundBrush(volume, SCALE.x / 2);
-            if (makecorridor) brushSize = new SineWave(0, 0.1f, SCALE.x * 0.07f, 60f);
-            if (pathfind1) brushSize = new SineWave(0, 0.1f, SCALE.x * 0.025f, 2f);
+            brush = new RoundBrush(volume, 1000);
+            if (pathfind1) brushSize = new SineWave(0, 0.1f, 50f, 2f);
             surface = new ArrayIsoSurface(volume);
             if (makecorridor) corridor = new WETriangleMesh();
             if (pathfind1) buildvol = new WETriangleMesh();
         }
 
-        if (pathfind1 || pathfind2) setpathfind();
+        if (pathfind1 || pathfind2 || makecorridor) setpathfind();
 
         cam = new PeasyCam(this, meshcentre.x, meshcentre.y, 0, 2200);
 
         if (pathfind1) setgui();
 
+        if (makecorridor) {
+            builder a = new builder(this, pts.get(45));
+            builder b = new builder(this, pts.get(1));
+            builderpop.add(a);
+            builderpop.add(b);
+        }
+
         if (flockfly) {
             boidoctree = new Octree(this, new Vec3D(-1, -1, -1).scaleSelf(meshcentre), DIM * 2);
 
-            for (int i = 0; i < 500; i++) {
+            for (int i = 0; i < 50; i++) {
                 flock.addBoid(new Boid(this, new Vec3D(random(0, 1200), random(0, 1200), random(190, 350)), new Vec3D(random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI), random(-TWO_PI, TWO_PI))));
             }
         }
 
-        if (makecorridor) {
-            readpath();
-            for (Vec3D a : circpts) {
-                Pathagent b = new Pathagent(this, a);
-                pathagtpts.add(b);
-            }
-        }
 
     }
 
     public void draw() {
         background(0);
+        pathagtpts.clear();
+        circpts.clear();
 
-        float x = cos((float)0.025*frameCount) * 1700;
-        float y = sin((float)0.025*frameCount) * 1700;
+        float x = cos((float) 0.0025 * frameCount) * 1700;
+        float y = sin((float) 0.0025 * frameCount) * 1700;
 
-        camera(x+900, y+900, 700, meshcentre.x, meshcentre.y, meshcentre.z, 0, 0, -1);
+        camera(x + 900, y + 900, 2000, meshcentre.x, meshcentre.y, meshcentre.z, 0, 0, -1);
 
         if (pathfind1) {
             renderpath();
             for (MeshLine l : lines) {
-                if(!buildvolume)l.drawline();
+                if (!buildvolume) l.drawline();
             }
             drawvolume();
         }
 
         if (pathfind2) runpathfind();
 
-        drawcorridor();
-
-
-        if ((flockfly) && (frameCount % 1 == 0)) {
-            boidoctree.run();
-
-            if (frameCount < 10) {
-                for (int i = 0; i < flock.boids.size(); i++) {
-                    Boid b = flock.boids.get(i);
-                    b.checkMesh();
-                }
+        if (makecorridor) {
+//            for (builder a : builderpop) {
+//                a.run();
+//            }
+            runpathfind2();
+            readpath();
+            for (Vec3D a : circpts) {
+                Pathagent b = new Pathagent(this, a, 1);
+                pathagtpts.add(b);
             }
+            for (Boid a : flock.boids) {
+                Pathagent c = new Pathagent(this, a, 2);
+                pathagtpts.add(c);
+            }
+        }
 
-            flock.run();
+                   drawcorridor();
+
+
+            if ((flockfly) && (frameCount % 1 == 0)) {
+                boidoctree.run();
+
+                if (frameCount < 10) {
+                    for (int i = 0; i < flock.boids.size(); i++) {
+                        Boid b = flock.boids.get(i);
+                        b.checkMesh();
+                    }
+                }
+
+                flock.run();
 
 //        boidoctree.draw();
-        }
+            }
 
-        if (frameCount % 1 == 0) {
-            meshrun();
-        }
+            if (frameCount % 1 == 0) {
+                meshrun();
+            }
 
 //        videoExport.saveFrame();
 
-        if (pathfind1) gui();
+            if (pathfind1) gui();
 
-    }
+        }
+
 
     private void setgui() {
         cp5 = new ControlP5(this);
@@ -243,7 +262,7 @@ public class CaveScan extends PApplet {
                 .setNumberOfTickMarks(50);
 
         cp5.addToggle("buildvolume")
-                .setPosition(300,50)
+                .setPosition(300, 50)
                 .setValue(false);
 
         cp5.setAutoDraw(false);
@@ -430,6 +449,75 @@ public class CaveScan extends PApplet {
 
     }
 
+    private int findclosestnode(ReadonlyVec3D var1) {
+        Vec3D var2 = new Vec3D();
+        float var3 = 3.4028235E38F;
+        int node = 0;
+
+        for (int i = 0; i < pts.size(); i++) {
+            Vec3D vara = pts.get(i);
+            float dista = vara.distanceToSquared(var1);
+            if (dista < var3) {
+                var3 = dista;
+                node = i;
+            }
+        }
+        return node;
+    }
+
+    private void runpathfind2() {
+
+        pathptsfile.clear();
+
+        for(Boid b :flock.boids){
+            pathFinder = makePathFinder(3);
+            usePathFinder(pathFinder, findclosestnode(b), 0);
+            for (int i = 0; i < rNodes.length; i++) {
+                String a = (Float.toString(rNodes[i].xf()) + "," + Float.toString(rNodes[i].yf()) + "," + Float.toString(rNodes[i].zf()));
+                pathptsfile.add(a);
+            }
+            pathptsfile.add("!");
+
+        }
+
+//        Vec3D builder1 = new Vec3D();
+//        Vec3D builder2 = new Vec3D();
+//
+//        builder1 = builderpop.get(0);
+//        builder2 = builderpop.get(1);
+//
+//        pathFinder = makePathFinder(3);
+//        usePathFinder(pathFinder, findclosestnode(builder1), 0);
+//        drawRoute(rNodes, color(200, 0, 0), 5.0f);
+//        for (int i = 0; i < rNodes.length; i++) {
+//            String a = (Float.toString(rNodes[i].xf()) + "," + Float.toString(rNodes[i].yf()) + "," + Float.toString(rNodes[i].zf()));
+//            pathptsfile.add(a);
+//        }
+//        pathptsfile.add("!");
+//
+//
+//        pathFinder = makePathFinder(3);
+//        usePathFinder(pathFinder, findclosestnode(builder2), 0);
+//        drawRoute(rNodes, color(200, 0, 0), 5.0f);
+//        for (int i = 0; i < rNodes.length; i++) {
+//            String a = (Float.toString(rNodes[i].xf()) + "," + Float.toString(rNodes[i].yf()) + "," + Float.toString(rNodes[i].zf()));
+//            pathptsfile.add(a);
+//        }
+//        pathptsfile.add("!");
+
+
+        String[] pathpts = new String[pathptsfile.size()];
+
+        for (int i = 0; i < pathptsfile.size(); i++) {
+            String a = pathptsfile.get(i);
+            pathpts[i] = a;
+        }
+
+        saveStrings("data/" + "path.txt", pathpts);
+
+
+    }
+
     private void drawpath() {
 //        drawEdges(exploredEdges, color(0, 0, 255), 1.8f);
 
@@ -521,8 +609,8 @@ public class CaveScan extends PApplet {
                 buildmesh1 = true;
 
                 pushMatrix();
-                stroke(255,0,0);
-                fill(20,240,30,70);
+                stroke(255, 0, 0);
+                fill(20, 240, 30, 70);
                 translate(meshcentre.x, meshcentre.y, meshcentre.z);
                 gfx.mesh(buildvol);
                 popMatrix();
@@ -540,41 +628,42 @@ public class CaveScan extends PApplet {
                     a.run();
                 }
 
-//                pushStyle();
-//                noFill();
-//                strokeWeight(6);
-//                stroke(0, 255, 0);
-//                beginShape();
-//                for (Pathagent a : pathagtpts) {
-//                    curveVertex(a.x, a.y, a.z);
-//                }
-//                endShape();
-//                popStyle();
-
-
-                if (ballvel < 4) {
-                    ballmove = false;
-                }
             }
 
-            if (!ballmove) {
-                if (!buildmesh) {
-                    brush.setSize(brushSize.update());
-                    for (Pathagent a : pathagtpts) {
+            if (!buildmesh) {
+
+                corridor.clear();
+                surface.reset();
+                volume.clear();
+
+                brush.setSize(new SineWave(0, 0.1f, 140f, 60f).update());
+                for (Pathagent a : pathagtpts) {
+                    if (a.type == 1)
                         brush.drawAtAbsolutePos(new Vec3D(a.x - meshcentre.x, a.y - meshcentre.y, a.z - meshcentre.z), density);
-                    }
-                    volume.closeSides();
-                    surface.reset();
-                    surface.computeSurfaceMesh(corridor, 0.1f);
-                    for (int i = 0; i < 1; i++) {
-                        new LaplacianSmooth().filter(corridor, 1);
-                    }
-
-                    buildmesh = true;
-
+                }
+                brush.setSize(new SineWave(0, 0.1f, 140f, 120f).update());
+                for (Pathagent a : pathagtpts) {
+                    if (a.type == 2)
+                        brush.drawAtAbsolutePos(new Vec3D(a.x - meshcentre.x, a.y - meshcentre.y, a.z - meshcentre.z), density);
+                }
+                volume.closeSides();
+                surface.reset();
+                surface.computeSurfaceMesh(corridor, 0.1f);
+                for (int i = 0; i < 1; i++) {
+                    new LaplacianSmooth().filter(corridor, 1);
                 }
 
-                if (!buildmesh1) {
+                //                   buildmesh = true;
+
+            }
+
+//            if (!buildmesh) {
+//                corridor.clear();
+//
+//                for (Pathagent a : pathagtpts) {
+//                    corridor.addMesh(a.b);
+//                }
+//
 //                corridcntr = corridor.computeCentroid();
 //                MeshVoxelizer voxelizer = new MeshVoxelizer(RES);
 //                voxelizer.setWallThickness(0);
@@ -585,21 +674,22 @@ public class CaveScan extends PApplet {
 //                surface.computeSurfaceMesh(corridor, 0.2f);
 //                corridor.computeVertexNormals();
 //
-//                for(int i=0; i<4; i++) {
-//                   new LaplacianSmooth().filter(corridor,1);
+//                for (int i = 0; i < 1; i++) {
+//                    new LaplacianSmooth().filter(corridor, 1);
 //                }
-                    buildmesh1 = true;
-                }
+////                    buildmesh = true;
+//            }
 
-                corridor.saveAsOBJ(sketchPath("data/" + "corridor.obj"));
+            //           corridor.saveAsOBJ(sketchPath("data/" + "corridor.obj"));
 
-                pushMatrix();
-                stroke(255, 0, 0);
-                translate(meshcentre.x, meshcentre.y, meshcentre.z);
-                gfx.mesh(corridor);
-                popMatrix();
+            pushMatrix();
+            stroke(255, 0, 0);
+            noFill();
+            translate(meshcentre.x, meshcentre.y, meshcentre.z);
+            gfx.mesh(corridor);
+            popMatrix();
 
-            }
+//            }
         }
     }
 
@@ -658,6 +748,7 @@ public class CaveScan extends PApplet {
             popStyle();
         }
     }
+
 
     void drawNodes() {
         pushStyle();
