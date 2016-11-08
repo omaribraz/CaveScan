@@ -185,6 +185,11 @@ public class CaveScan extends PApplet {
     public void draw() {
         background(0);
 
+        float x = cos((float)0.0025*frameCount) * 1700;
+        float y = sin((float)0.0025*frameCount) * 1700;
+
+        camera(x+900, y+900, 700, 750, 750, 200, 0, 0, -1);
+
         if (pathfind1) {
             renderpath();
             for (MeshLine l : lines) {
