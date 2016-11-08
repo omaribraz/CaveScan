@@ -10,6 +10,8 @@ import toxi.geom.mesh.Mesh3D;
 
 import java.util.List;
 
+import static processing.core.PApplet.degrees;
+
 public class Pathagent extends Vec3D {
     private CaveScan p;
     private Vec3D vel;
@@ -54,6 +56,16 @@ public class Pathagent extends Vec3D {
                 Vec3D a = this.copy().subSelf(var1);
 
                 float rad = var1.distanceTo(this);
+
+                Vec3D a1 = var1.copy().subSelf(this);
+                Vec3D a2 = p.Normal.get(var1);
+
+                float ang = a2.angleBetween(a1, true);
+                float ang2 = degrees(ang);
+                if (ang2 > 90) {
+                    a = a.copy().scaleSelf(-1);
+                }
+
                 if (rad < (dia + 5)) {
 //                    a.normalize();
                     a = a.copy().scaleSelf(1 / rad);

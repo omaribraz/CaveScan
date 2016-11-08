@@ -36,7 +36,7 @@ public class CaveScan extends PApplet {
 
 // Booleans
 
-    boolean pathfind1 = true;
+    boolean pathfind1 = false;
     boolean pathfind2 = false;
 
     boolean showscanmesh = false;
@@ -44,7 +44,7 @@ public class CaveScan extends PApplet {
     boolean flockfly = false;
     boolean leavetrail = false;
 
-    boolean makecorridor = false;
+    boolean makecorridor = true;
 
     int slowFc = 0;
 
@@ -185,10 +185,10 @@ public class CaveScan extends PApplet {
     public void draw() {
         background(0);
 
-        float x = cos((float)0.0025*frameCount) * 1700;
-        float y = sin((float)0.0025*frameCount) * 1700;
+        float x = cos((float)0.025*frameCount) * 1700;
+        float y = sin((float)0.025*frameCount) * 1700;
 
-        camera(x+900, y+900, 700, 750, 750, 200, 0, 0, -1);
+        camera(x+900, y+900, 700, meshcentre.x, meshcentre.y, meshcentre.z, 0, 0, -1);
 
         if (pathfind1) {
             renderpath();
@@ -505,7 +505,7 @@ public class CaveScan extends PApplet {
                     Vec3D f = pts.get(i);
                     float varline = ptsvar.get(f);
                     if (!buildmesh1) {
-                        if (varline > .5) {
+                        if (varline > .3) {
                             brush.setSize(brushSize.update());
                             brush.drawAtAbsolutePos(new Vec3D(f.x - meshcentre.x, f.y - meshcentre.y, f.z - meshcentre.z), density);
                         }
@@ -515,10 +515,14 @@ public class CaveScan extends PApplet {
                 volume.closeSides();
                 surface.reset();
                 surface.computeSurfaceMesh(buildvol, 0.1f);
+                for (int i = 0; i < 2; i++) {
+                    new LaplacianSmooth().filter(buildvol, 1);
+                }
                 buildmesh1 = true;
 
                 pushMatrix();
-                stroke(255, 0, 0);
+                stroke(255,0,0);
+                fill(20,240,30,70);
                 translate(meshcentre.x, meshcentre.y, meshcentre.z);
                 gfx.mesh(buildvol);
                 popMatrix();
